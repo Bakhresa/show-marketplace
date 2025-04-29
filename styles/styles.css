@@ -1,0 +1,513 @@
+/* Global Reset and Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    background-color: #f7fafc;
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+@keyframes bounceIn {
+    0% { transform: translateY(-10px); opacity: 0; }
+    60% { transform: translateY(3px); opacity: 1; }
+    100% { transform: translateY(0); }
+}
+
+@keyframes underline {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 0 0 rgba(49, 130, 206, 0.3); }
+    50% { box-shadow: 0 0 10px 2px rgba(49, 130, 206, 0.5); }
+    100% { box-shadow: 0 0 0 0 rgba(49, 130, 206, 0.3); }
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Background Image for Register and Login Pages */
+body.register-page,
+body.login-page {
+    background-image: url('/market/images/bakhresa.jpg') !important;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: #1a202c; /* Fallback color for debugging */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Register and Login Form Container */
+.register-form-container,
+.login-form-container {
+    background: rgba(255, 255, 255, 0.95);
+    max-width: 400px;
+    width: 100%;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    animation: slideInLeft 0.5s ease-out;
+}
+
+/* Tab Group */
+.tab-group {
+    display: flex;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.tab {
+    flex: 1;
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 500;
+    color: #4a5568;
+    background: #f7fafc;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tab.active {
+    background: #1a202c;
+    color: #ffffff;
+}
+
+.tab-icon {
+    margin-right: 0.5rem;
+}
+
+/* Form Styling */
+.register-form-container h1,
+.login-form-container h1 {
+    color: #1a202c;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.register-form-container label,
+.login-form-container label {
+    color: #1a202c;
+    font-weight: 500;
+}
+
+.register-form-container input[type="text"],
+.register-form-container input[type="email"],
+.register-form-container input[type="tel"],
+.register-form-container input[type="password"],
+.login-form-container input[type="email"],
+.login-form-container input[type="tel"],
+.login-form-container input[type="password"] {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.register-form-container input:focus,
+.login-form-container input:focus {
+    outline: none;
+    border-color: #3182ce;
+    animation: glow 0.6s infinite;
+}
+
+/* Password Field */
+.register-form-container .relative,
+.login-form-container .relative {
+    position: relative;
+}
+
+.register-form-container .password-toggle,
+.login-form-container .password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #4a5568;
+}
+
+/* Field Transitions */
+.field-visible {
+    display: block;
+    animation: fadeSlide 0.3s ease forwards;
+}
+
+.field-hidden {
+    display: none;
+    opacity: 0;
+}
+
+/* Error Messages */
+.error-message {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    min-height: 1rem;
+    transition: opacity 0.3s ease;
+}
+
+/* Password Strength Bar */
+.password-strength {
+    height: 8px;
+    width: 0;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #fff;
+    line-height: 8px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Register/Login Button */
+.register-btn {
+    background-color: #1a202c;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.register-btn:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.register-btn:hover:not(:disabled) {
+    background-color: #2d3748;
+    transform: translateY(-2px);
+}
+
+.register-btn:active:not(:disabled) {
+    animation: pulse 0.2s;
+}
+
+/* Success and Error Messages */
+body.register-page .text-red-500,
+body.login-page .text-red-500 {
+    background: rgba(255, 245, 245, 0.9);
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #e53e3e;
+    animation: bounceIn 0.5s ease-out;
+}
+
+body.register-page .text-green-500,
+body.login-page .text-green-500 {
+    background: rgba(240, 255, 244, 0.9);
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #38a169;
+    animation: bounceIn 0.5s ease-out;
+}
+
+/* Welcome Section on Index Page */
+.welcome-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Navigation Bar */
+nav {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+    position: relative;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+nav a:hover {
+    color: #e2e8f0;
+    transform: translateY(-2px);
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #e2e8f0;
+    transition: width 0.3s ease;
+}
+
+nav a:hover::after {
+    animation: underline 0.3s forwards;
+}
+
+/* Headings */
+h1, h2 {
+    font-weight: 700;
+    color: #1a202c;
+    animation: fadeIn 0.5s ease-in;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Form Styling (Default for Other Pages) */
+form {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideInLeft 0.5s ease-out;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+select {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 0.75rem;
+    width: 100%;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #3182ce;
+    animation: glow 0.6s infinite;
+}
+
+/* Radio Buttons (For Other Pages) */
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 0.5rem;
+    accent-color: #3182ce;
+    transition: transform 0.2s ease;
+}
+
+.radio-group input[type="radio"]:hover {
+    transform: scale(1.1);
+}
+
+/* Labels */
+label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+/* Buttons (Default for Other Pages) */
+button, a.bg-blue-600 {
+    background-color: #3182ce;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-decoration: none;
+}
+
+button:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button:hover:not(:disabled), a.bg-blue-600:hover {
+    background-color: #2b6cb0;
+    transform: translateY(-3px);
+}
+
+button:active:not(:disabled), a.bg-blue-600:active {
+    animation: pulse 0.2s;
+}
+
+/* Show Cards */
+.card {
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card p {
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.card a {
+    margin-top: 0.5rem;
+}
+
+/* Filter Dropdown */
+select#genre {
+    max-width: 200px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    animation: slideInLeft 0.5s ease-out;
+}
+
+/* Success and Error Messages (Default for Other Pages) */
+.text-green-500 {
+    background: #f0fff4;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #38a169;
+    animation: bounceIn 0.5s ease-out;
+}
+
+.text-red-500 {
+    background: #fff5f5;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #e53e3e;
+    animation: bounceIn 0.5s ease-out;
+}
+
+/* Footer */
+footer {
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    body.register-page,
+    body.login-page {
+        padding: 1rem;
+    }
+
+    .register-form-container,
+    .login-form-container {
+        padding: 1.5rem;
+    }
+
+    .welcome-section {
+        padding: 1rem;
+    }
+
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+
+    nav .container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav .container div {
+        margin-top: 1rem;
+    }
+
+    nav a {
+        margin: 0 1rem 0 0;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .card {
+        padding: 1rem;
+    }
+
+    button, a.bg-blue-600 {
+        padding: 0.5rem 1rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    input, select {
+        padding: 0.5rem;
+    }
+}
