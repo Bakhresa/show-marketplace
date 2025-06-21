@@ -5,10 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Database configuration
-$host = 'localhost';
-$dbname = 'show_marketplace';
-$username = 'root';
-$password = '';
+$host = 'sql313.infinityfree.com';
+$dbname = 'if0_39287916_Market';
+$username = 'if0_39287916';
+$password = 'Chim9664';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
