@@ -7,49 +7,46 @@ error_reporting(E_ALL);
 // ──────────────────────────────────────────────────────────────
 
 // 2. DATABASE CONNECTION
-require_once 'includes/config.php'; // must set $pdo
+require_once 'includes/config.php'; // must define $pdo
 
-// 3. PAGE META
+// 3. SESSION & META
+session_start();
 $body_class = 'graphic-bg flex items-center justify-center min-h-screen';
 $page_title = 'Login';
 
 // 4. INITIALISE STATE
 $errors = [];
 $success = '';
-
-// Form defaults (fix undefined variable warnings)
 $email_or_phone = '';
 $password = '';
 
-session_start();
-
 // 5. HANDLE FORM SUBMISSION
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // ── Grab & trim fields ────────────────────────────────────
+    // ── Sanitize input ─────────────────────────────────────────
     $email_or_phone = trim($_POST['email_or_phone'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $password       = $_POST['password'] ?? '';
 
-    // ── Validate inputs ──────────────────────────────────────
+    // ── Validate input ─────────────────────────────────────────
     if ($email_or_phone === '') {
         $errors[] = 'Email or phone number is required.';
     }
+
     if ($password === '') {
         $errors[] = 'Password is required.';
     }
 
-    // ── Authenticate user ────────────────────────────────────
+    // ── Authenticate ───────────────────────────────────────────
     if (empty($errors)) {
-        $email = filter_var($email_or_phone, FILTER_VALIDATE_EMAIL) ? $email_or_phone : null;
+        $email        = filter_var($email_or_phone, FILTER_VALIDATE_EMAIL) ? $email_or_phone : null;
         $phone_number = preg_match('/^\+?[1-9]\d{1,14}$/', $email_or_phone) ? $email_or_phone : null;
 
         try {
-            $sql = 'SELECT id, password, is_admin FROM users WHERE email = ? OR phone_number = ?';
+            $sql = 'SELECT id, password, is_admin FROM users WHERE email = ? OR phone_number = ? LIMIT 1';
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$email ?: $email_or_phone, $phone_number ?: $email_or_phone]);
+            $stmt->execute([$email ?: '', $phone_number ?: '']);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user && password_verify($password, $user['password'])) {
-                // Successful login
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['is_admin'] = $user['is_admin'];
                 header('Location: ' . ($user['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'));
@@ -59,12 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (PDOException $e) {
             error_log("Login failed: " . $e->getMessage());
-            $errors[] = 'Login failed: ' . $e->getMessage();
+            $errors[] = 'Login failed. Please try again later.';
         }
     }
 }
 
-// 6. PAGE LAYOUT
+// 6. PAGE TEMPLATE
 include 'includes/header.php';
 ?>
 <!-- ──────────────────────────────────────────────────────────── -->
