@@ -1,33 +1,38 @@
 <?php
 // ──────────────────────────────────────────────────────────────
-// 1. DEBUG SETTINGS  – comment these two lines out when live
+// 1. DEBUG SETTINGS — comment out in production
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 // ──────────────────────────────────────────────────────────────
 
 // 2. DATABASE CONNECTION
-require_once 'includes/config.php';   //  <- make sure this file sets $pdo (PDO instance)
+require_once 'includes/config.php'; // must set $pdo
 
 // 3. PAGE META
 $body_class = 'graphic-bg flex items-center justify-center min-h-screen';
 $page_title = 'Register';
 
 // 4. INITIALISE STATE
-$errors  = [];
+$errors = [];
 $success = '';
+
+// Form defaults (fix undefined variable warnings)
+$email_or_phone = '';
+$full_name = '';
+$password = '';
+$country = '';
 
 // 5. HANDLE FORM SUBMISSION
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     // ── Grab & trim fields ────────────────────────────────────
     $email_or_phone = trim($_POST['email_or_phone'] ?? '');
-    $full_name      = trim($_POST['full_name']      ?? '');
-    $password       =       $_POST['password']      ?? '';
-    $country        = trim($_POST['country']        ?? '');
+    $full_name      = trim($_POST['full_name'] ?? '');
+    $password       = $_POST['password'] ?? '';
+    $country        = trim($_POST['country'] ?? '');
 
     // ── Prepare vars ─────────────────────────────────────────
-    $email        = null;
+    $email = null;
     $phone_number = null;
 
     // ── Validate email / phone ───────────────────────────────
@@ -42,14 +47,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ── Other validation ─────────────────────────────────────
-    if ($full_name === '')              { $errors[] = 'Full name is required.';          }
-    if ($password === '')               { $errors[] = 'Password is required.';           }
-    elseif (strlen($password) < 6)      { $errors[] = 'Password must be at least 6 characters.'; }
-    if ($country === '')                { $errors[] = 'Country is required.';            }
+    if ($full_name === '') {
+        $errors[] = 'Full name is required.';
+    }
+    if ($password === '') {
+        $errors[] = 'Password is required.';
+    } elseif (strlen($password) < 6) {
+        $errors[] = 'Password must be at least 6 characters.';
+    }
+    if ($country === '') {
+        $errors[] = 'Country is required.';
+    }
 
     // ── Duplicate-check in DB ────────────────────────────────
     if (empty($errors)) {
-        $sql    = 'SELECT id FROM users WHERE '. ($email ? 'email = ?' : 'phone_number = ?');
+        $sql = 'SELECT id FROM users WHERE ' . ($email ? 'email = ?' : 'phone_number = ?');
         $params = [$email ?: $phone_number];
 
         $stmt = $pdo->prepare($sql);
@@ -70,15 +82,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  VALUES (?, ?, ?, ?, ?, 0)'
             );
             $stmt->execute([$full_name, $email, $phone_number, $hashed_password, $country]);
-            $success = 'Registration successful! <a href="login.php" class="text-blue-600 underline">Login</a>.';
+            $success = '✅ Registration successful! <a href="login.php" class="text-blue-600 underline">Login</a>.';
+
+            // Reset form fields
+            $email_or_phone = $full_name = $password = $country = '';
         } catch (PDOException $e) {
-            // You can log $e->getMessage() to a file instead of showing it.
             $errors[] = 'Registration failed: ' . $e->getMessage();
         }
     }
 }
 
-// 6. COUNTRY LIST  (simplified)
+// 6. COUNTRY LIST
 $countries = [
     'US' => 'United States',
     'KE' => 'Kenya',
@@ -118,7 +132,7 @@ include 'includes/header.php';
                     id="email_or_phone"
                     name="email_or_phone"
                     placeholder="user@example.com or +1234567890"
-                    value="<?php echo htmlspecialchars($email_or_phone ?? ''); ?>"
+                    value="<?php echo htmlspecialchars($email_or_phone); ?>"
                     required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -131,7 +145,7 @@ include 'includes/header.php';
                     type="text"
                     id="full_name"
                     name="full_name"
-                    value="<?php echo htmlspecialchars($full_name ?? ''); ?>"
+                    value="<?php echo htmlspecialchars($full_name); ?>"
                     required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -158,14 +172,10 @@ include 'includes/header.php';
                     required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
+                    <option value="">-- Select Country --</option>
                     <?php foreach ($countries as $code => $name): ?>
                         <option value="<?php echo $code; ?>"
-                            <?php
-                                $selected = ($country && $country === $code) ||
-                                            (!$country && $code === 'US');
-                                echo $selected ? 'selected' : '';
-                            ?>
-                        >
+                            <?php echo ($country === $code) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($name); ?>
                         </option>
                     <?php endforeach; ?>
