@@ -7,14 +7,13 @@ error_reporting(E_ALL);
 // ──────────────────────────────────────────────────────────────
 
 // 2. DATABASE CONNECTION
-require_once 'includes/config.php'; // must set $pdo
+require_once 'includes/config.php'; // must set $pdo (assumes session_start() is here)
 
 // 3. PAGE META
 $body_class = 'graphic-bg flex items-center justify-center min-h-screen';
 $page_title = 'Login';
 
 // 4. INITIALISE STATE
-session_start(); // Ensure session is started
 $errors = [];
 $success = '';
 
@@ -49,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($user && password_verify($password, $user['password'])) {
                 // Successful login
-                session_start(); // Ensure session is active
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['is_admin'] = (bool)$user['is_admin'];
                 $redirect = $_SESSION['is_admin'] && file_exists('admin_dashboard.php') ? 'admin_dashboard.php' : 'user_dashboard.php';
