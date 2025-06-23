@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 // ──────────────────────────────────────────────────────────────
 
 // 2. DATABASE CONNECTION
-require_once 'includes/config.php'; // must set $pdo (assumes session_start() is here)
+require_once 'includes/config.php'; // Assumes session_start() is in config.php
 
 // 3. PAGE META
 $body_class = 'graphic-bg flex items-center justify-center min-h-screen';
@@ -26,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ── Grab & trim fields ────────────────────────────────────
     $email_or_phone = trim($_POST['email_or_phone'] ?? '');
     $password = $_POST['password'] ?? '';
+
+    error_log("Attempting login with email/phone: $email_or_phone at " . date('Y-m-d H:i:s'));
 
     // ── Validate inputs ──────────────────────────────────────
     if ($email_or_phone === '') {
@@ -50,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Successful login
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['is_admin'] = (bool)$user['is_admin'];
+                error_log("Login successful for user ID: " . $user['id'] . " at " . date('Y-m-d H:i:s'));
                 $redirect = $_SESSION['is_admin'] && file_exists('admin_dashboard.php') ? 'admin_dashboard.php' : 'user_dashboard.php';
                 if (file_exists($redirect)) {
                     header('Location: ' . $redirect);
@@ -61,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = 'Invalid email/phone or password.';
             }
         } catch (PDOException $e) {
-            error_log("Login failed: " . $e->getMessage());
+            error_log("Login failed: " . $e->getMessage() . " at " . date('Y-m-d H:i:s'));
             $errors[] = 'An error occurred during login. Please try again later.';
         }
     }
