@@ -21,8 +21,6 @@ $success = '';
 $email_or_phone = '';
 $password = '';
 
-session_start();
-
 // 5. HANDLE FORM SUBMISSION
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ── Grab & trim fields ────────────────────────────────────
@@ -43,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phone_number = preg_match('/^\+?[1-9]\d{1,14}$/', $email_or_phone) ? $email_or_phone : null;
 
         try {
-            $sql = 'SELECT id, password, is_admin FROM users WHERE email = ? OR phone_number = ?';
+            $sql = 'SELECT id, password, is_admin FROM users WHERE (email = ? OR phone_number = ?) AND is_admin IS NOT NULL LIMIT 1';
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$email ?: $email_or_phone, $phone_number ?: $email_or_phone]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -51,9 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user && password_verify($password, $user['password'])) {
                 // Successful login
                 $_SESSION['user_id'] = $user['id'];
-                $_SESSION['is_admin'] = $user['is_admin'];
-                header('Location: ' . ($user['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'));
-                exit;
+                $_SESSION['is_admin'] = (bool)$user['is_admin'];
+                $redirect = $user['is_admin'] && file_exists('admin_dashboard.php') ? 'admin_dashboard.php' : 'user_dashboard.php';
+                if (file_exists($redirect)) {
+                    header('Location: ' . $redirect);
+                    exit;
+                } else {
+                    $errors[] = 'Dashboard page not found. Please create ' . htmlspecialchars($redirect) . ' or contact support.';
+                }
             } else {
                 $errors[] = 'Invalid email/phone or password.';
             }
