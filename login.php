@@ -14,6 +14,7 @@ $body_class = 'graphic-bg flex items-center justify-center min-h-screen';
 $page_title = 'Login';
 
 // 4. INITIALISE STATE
+session_start(); // Ensure session is started
 $errors = [];
 $success = '';
 
@@ -48,9 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($user && password_verify($password, $user['password'])) {
                 // Successful login
+                session_start(); // Ensure session is active
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['is_admin'] = (bool)$user['is_admin'];
-                $redirect = $user['is_admin'] && file_exists('admin_dashboard.php') ? 'admin_dashboard.php' : 'user_dashboard.php';
+                $redirect = $_SESSION['is_admin'] && file_exists('admin_dashboard.php') ? 'admin_dashboard.php' : 'user_dashboard.php';
                 if (file_exists($redirect)) {
                     header('Location: ' . $redirect);
                     exit;
@@ -62,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (PDOException $e) {
             error_log("Login failed: " . $e->getMessage());
-            $errors[] = 'Login failed: ' . $e->getMessage();
+            $errors[] = 'An error occurred during login. Please try again later.';
         }
     }
 }

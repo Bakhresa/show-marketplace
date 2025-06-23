@@ -4,6 +4,7 @@ $body_class = 'graphic-bg'; // Apply the graphic background
 $page_title = 'Admin Dashboard - Show Marketplace';
 
 // Check if user is logged in and is an admin
+session_start();
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
     header("Location: login.php?error=Please login as an admin to access this page.");
     exit;
