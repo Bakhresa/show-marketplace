@@ -231,7 +231,7 @@ try {
 // Fetch all users (excluding admins)
 $all_users = [];
 try {
-    $stmt = $pdo->prepare("SELECT id, name, email, phone, created_at FROM users WHERE is_admin = 0 ORDER BY name ASC");
+    $stmt = $pdo->prepare("SELECT id, name, email, phone_number, created_at FROM users WHERE is_admin = 0 ORDER BY name ASC");
     $stmt->execute();
     $all_users = $stmt->fetchAll();
     if (empty($all_users)) {
@@ -471,7 +471,7 @@ body.modal-open {
                         <h3 class="text-xl font-semibold mb-2 text-gray-800"><?php echo htmlspecialchars($data['details']['name']); ?></h3>
                         <div class="mb-4">
                             <p><strong>Email:</strong> <?php echo htmlspecialchars($data['details']['email'] ?: 'Not provided'); ?></p>
-                            <p><strong>Phone:</strong> <?php echo htmlspecialchars($data['details']['phone'] ?: 'Not provided'); ?></p>
+                            <p><strong>Phone:</strong> <?php echo htmlspecialchars($data['details']['phone_number'] ?: 'Not provided'); ?></p>
                             <p><strong>Registered Since:</strong> <?php echo htmlspecialchars($data['details']['created_at'] ?: 'N/A'); ?></p>
                             <p><strong>Total Bookings:</strong> <?php echo htmlspecialchars($data['total_bookings']); ?></p>
                             <p><strong>Total Spent:</strong> $<?php echo number_format($data['total_spent'], 2); ?></p>
