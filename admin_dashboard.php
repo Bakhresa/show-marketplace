@@ -204,69 +204,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     }
 }
 
-// Fetch all bookings
-$bookings = [];
-try {
-    $stmt = $pdo->prepare("SELECT b.id, b.user_id, b.show_id, b.tickets, b.total_price, b.status, b.created_at, 
-                           b.show_title AS show_title, u.name AS user_name 
-                           FROM bookings b 
-                           JOIN users u ON b.user_id = u.id 
-                           ORDER BY b.created_at DESC");
-    $stmt->execute();
-    $bookings = $stmt->fetchAll();
-} catch (PDOException $e) {
-    error_log("Fetch bookings failed: " . $e->getMessage());
-}
-
-// Fetch all shows
-$all_shows = [];
-try {
-    $stmt = $pdo->prepare("SELECT s.* FROM shows s ORDER BY s.date ASC");
-    $stmt->execute();
-    $all_shows = $stmt->fetchAll();
-} catch (PDOException $e) {
-    error_log("Fetch shows failed: " . $e->getMessage());
-}
-
-// Fetch all users (excluding admins)
-$all_users = [];
-try {
-    $stmt = $pdo->prepare("SELECT id, name, email, phone FROM users WHERE is_admin = 0 ORDER BY name ASC");
-    $stmt->execute();
-    $all_users = $stmt->fetchAll();
-} catch (PDOException $e) {
-    error_log("Fetch users failed: " . $e->getMessage());
-}
-
-// Fetch bookings and transactions for each user
+// Fetch data (mimicking user_dashboard.php logic via a shared data file)
+require_once 'data_fetch.php'; // Assume this file contains functions like get_users(), get_shows(), get_bookings()
+$all_users = get_users($pdo); // Fetch users excluding admins
 $user_data = [];
 foreach ($all_users as $user) {
     $user_id = $user['id'];
-
-    try {
-        $stmt = $pdo->prepare("SELECT id, show_id, tickets, total_price, status, created_at, show_title, show_date, show_venue 
-                               FROM bookings 
-                               WHERE user_id = ? 
-                               ORDER BY created_at DESC");
-        $stmt->execute([$user_id]);
-        $user_bookings = $stmt->fetchAll();
-
-        $stmt = $pdo->prepare("SELECT t.id, t.booking_id, t.amount, t.mpesa_receipt_number, t.phone_number, t.transaction_date, t.status 
-                               FROM transactions t 
-                               WHERE t.user_id = ? 
-                               ORDER BY t.transaction_date DESC");
-        $stmt->execute([$user_id]);
-        $user_transactions = $stmt->fetchAll();
-
-        $user_data[$user_id] = [
-            'details' => $user,
-            'bookings' => $user_bookings,
-            'transactions' => $user_transactions
-        ];
-    } catch (PDOException $e) {
-        error_log("Fetch user data failed for user $user_id: " . $e->getMessage());
-    }
+    $user_data[$user_id] = [
+        'details' => $user,
+        'bookings' => get_user_bookings($pdo, $user_id),
+        'transactions' => get_user_transactions($pdo, $user_id)
+    ];
 }
+$all_shows = get_shows($pdo);
+$bookings = get_bookings($pdo);
 
 // Data for charts (with fallback if queries fail)
 $bookings_per_show_labels = [];
@@ -712,7 +663,7 @@ body.modal-open {
         </div>
     </div>
 
-    <!-- Chat Section -->
+    <!-- Chat Section with Live Updates -->
     <div class="mt-10 max-w-6xl mx-auto">
         <h2 class="text-2xl font-bold text-white mb-4">User Messages</h2>
         <div class="card bg-white p-6 rounded-lg shadow-md">
@@ -739,22 +690,8 @@ body.modal-open {
                 <?php endif; ?>
             </div>
             <?php if ($selected_user_id): ?>
-                <div id="admin-chat-window" class="border rounded-lg p-4 h-64 overflow-y-auto bg-gray-50 mb-4">
-                    <?php if (empty($chat_messages)): ?>
-                        <p class="text-gray-600">No messages yet with this user.</p>
-                    <?php else: ?>
-                        <?php foreach ($chat_messages as $message): ?>
-                            <div class="mb-2 <?php echo $message['sender_type'] === 'admin' ? 'text-right' : 'text-left'; ?>">
-                                <p class="inline-block p-2 rounded-lg <?php echo $message['sender_type'] === 'admin' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-800'; ?>">
-                                    <strong><?php echo $message['sender_type'] === 'admin' ? 'You' : htmlspecialchars($message['sender_name']); ?>:</strong> 
-                                    <?php echo htmlspecialchars($message['message']); ?>
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1"><?php echo htmlspecialchars($message['created_at']); ?></p>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-                <form method="POST">
+                <div id="admin-chat-window" class="border rounded-lg p-4 h-64 overflow-y-auto bg-gray-50 mb-4"></div>
+                <form method="POST" id="chat-form">
                     <input type="hidden" name="receiver_id" value="<?php echo $selected_user_id; ?>">
                     <div class="flex space-x-2">
                         <textarea name="message" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
@@ -767,6 +704,7 @@ body.modal-open {
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Bookings per Show Chart (Bar Chart)
     const bookingsPerShowCtx = document.getElementById('bookingsPerShowChart').getContext('2d');
@@ -871,85 +809,70 @@ body.modal-open {
     });
 
     const selectedUserId = <?php echo json_encode($selected_user_id); ?>;
+    const chatWindow = document.getElementById('admin-chat-window');
+    const chatForm = document.getElementById('chat-form');
 
-    function updateUnreadCounts() {
-        fetch('api/notifications.php?action=get_unread_count')
+    function updateChat() {
+        if (!selectedUserId) return;
+        fetch(`admin_dashboard.php?action=get_messages&user_id=${selectedUserId}`, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
             .then(response => response.json())
             .then(data => {
-                const unreadCounts = data.unread_counts || [];
+                if (data.success) {
+                    chatWindow.innerHTML = data.messages.map(msg => {
+                        const alignment = msg.sender_type === 'admin' ? 'text-right' : 'text-left';
+                        const bgColor = msg.sender_type === 'admin' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-800';
+                        const sender = msg.sender_type === 'admin' ? 'You' : msg.sender_name;
+                        return `<div class="mb-2 ${alignment}"><p class="inline-block p-2 rounded-lg ${bgColor}"><strong>${sender}:</strong> ${msg.message}</p><p class="text-xs text-gray-500 mt-1">${msg.created_at}</p></div>`;
+                    }).join('');
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }
+            })
+            .catch(error => console.error('Error fetching messages:', error));
+    }
+
+    function updateUnreadCounts() {
+        fetch('admin_dashboard.php?action=get_unread_count', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(response => response.json())
+            .then(data => {
                 const userList = document.getElementById('chat-users-list');
-
-                const unreadMap = {};
-                unreadCounts.forEach(count => {
-                    unreadMap[count.sender_id] = count.unread_count;
-                });
-
-                userList.querySelectorAll('a[data-user-id]').forEach(userElement => {
-                    const userId = userElement.getAttribute('data-user-id');
-                    const unreadCount = unreadMap[userId] || 0;
-                    let badge = userElement.querySelector('.unread-count');
-
-                    if (unreadCount > 0) {
-                        if (!badge) {
-                            badge = document.createElement('span');
-                            badge.className = 'unread-count ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1';
-                            badge.setAttribute('data-user-id', userId);
-                            userElement.appendChild(badge);
+                data.unread_counts.forEach(count => {
+                    const userElement = userList.querySelector(`a[data-user-id="${count.sender_id}"]`);
+                    if (userElement) {
+                        let badge = userElement.querySelector('.unread-count');
+                        if (count.unread_count > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'unread-count ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1';
+                                badge.setAttribute('data-user-id', count.sender_id);
+                                userElement.appendChild(badge);
+                            }
+                            badge.textContent = count.unread_count;
+                        } else if (badge) {
+                            badge.remove();
                         }
-                        badge.textContent = unreadCount;
-                    } else if (badge) {
-                        badge.remove();
                     }
                 });
             })
             .catch(error => console.error('Error fetching unread counts:', error));
     }
 
-    function updateChatMessages() {
-        if (!selectedUserId) return;
-
-        fetch(`api/notifications.php?action=get_messages&user_id=${selectedUserId}`)
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('admin_dashboard.php', {method: 'POST', body: formData, headers: {'X-Requested-With': 'XMLHttpRequest'}})
             .then(response => response.json())
             .then(data => {
-                const chatWindow = document.getElementById('admin-chat-window');
-                const messages = data.messages || [];
-                let html = '';
-
-                if (messages.length === 0) {
-                    html = '<p class="text-gray-600">No messages yet with this user.</p>';
-                } else {
-                    messages.forEach(message => {
-                        const alignment = message.sender_type === 'admin' ? 'text-right' : 'text-left';
-                        const bgColor = message.sender_type === 'admin' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-800';
-                        const sender = message.sender_type === 'admin' ? 'You' : message.sender_name;
-                        html += `
-                            <div class="mb-2 ${alignment}">
-                                <p class="inline-block p-2 rounded-lg ${bgColor}">
-                                    <strong>${sender}:</strong> ${message.message}
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1">${message.created_at}</p>
-                            </div>
-                        `;
-                    });
+                if (data.success) {
+                    this.querySelector('textarea').value = '';
+                    updateChat();
                 }
-
-                chatWindow.innerHTML = html;
-                chatWindow.scrollTop = chatWindow.scrollHeight;
             })
-            .catch(error => console.error('Error fetching messages:', error));
-    }
+            .catch(error => console.error('Error sending message:', error));
+    });
 
+    updateChat();
     updateUnreadCounts();
-    if (selectedUserId) {
-        updateChatMessages();
-    }
-
-    setInterval(() => {
-        updateUnreadCounts();
-        if (selectedUserId) {
-            updateChatMessages();
-        }
-    }, 10000);
+    setInterval(() => { updateChat(); updateUnreadCounts(); }, 5000); // Poll every 5 seconds
 
     let currentShowCardId = null;
 
