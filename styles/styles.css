@@ -94,7 +94,12 @@ body.login-page {
     color: #4a5568;
     background: #f7fafc;
     cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.tab:hover {
+    background-color: #edf2f7;
+    transform: translateY(-2px);
 }
 
 .tab.active {
@@ -130,7 +135,7 @@ body.login-page {
     border-radius: 8px;
     padding: 0.75rem 1rem;
     width: 100%;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .register-form-container input:focus,
@@ -138,6 +143,7 @@ body.login-page {
     outline: none;
     border-color: #3182ce;
     animation: glow 0.6s infinite;
+    transform: scale(1.02);
 }
 
 /* Password Field */
@@ -154,6 +160,12 @@ body.login-page {
     transform: translateY(-50%);
     cursor: pointer;
     color: #4a5568;
+    transition: color 0.3s ease;
+}
+
+.register-form-container .password-toggle:hover,
+.login-form-container .password-toggle:hover {
+    color: #3182ce;
 }
 
 /* Field Transitions */
@@ -248,6 +260,12 @@ body.login-page .text-green-500 {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.5s ease-in;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Navigation Bar */
@@ -306,6 +324,12 @@ form {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     animation: slideInLeft 0.5s ease-out;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+form:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 input[type="text"],
@@ -318,7 +342,7 @@ select {
     border-radius: 4px;
     padding: 0.75rem;
     width: 100%;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 input:focus,
@@ -326,6 +350,7 @@ select:focus {
     outline: none;
     border-color: #3182ce;
     animation: glow 0.6s infinite;
+    transform: scale(1.02);
 }
 
 /* Radio Buttons (For Other Pages) */
@@ -343,6 +368,12 @@ select:focus {
     font-weight: 500;
     color: #4a5568;
     cursor: pointer;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.radio-group label:hover {
+    color: #3182ce;
+    transform: translateY(-2px);
 }
 
 .radio-group input[type="radio"] {
@@ -377,12 +408,6 @@ button, a.bg-blue-600 {
     text-decoration: none;
 }
 
-button:disabled {
-    background-color: #a0aec0;
-    cursor: not-allowed;
-    transform: none;
-}
-
 button:hover:not(:disabled), a.bg-blue-600:hover {
     background-color: #2b6cb0;
     transform: translateY(-3px);
@@ -392,7 +417,13 @@ button:active:not(:disabled), a.bg-blue-600:active {
     animation: pulse 0.2s;
 }
 
-/* Show Cards */
+button:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Show Cards and Dashboard Components */
 .card {
     background: #ffffff;
     border-radius: 8px;
@@ -414,6 +445,39 @@ button:active:not(:disabled), a.bg-blue-600:active {
 
 .card a {
     margin-top: 0.5rem;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.card a:hover {
+    color: #3182ce;
+    transform: translateY(-2px);
+}
+
+/* Apply hover effects to dashboard-specific elements */
+.dashboard-component {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-component:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure buttons within dashboards also have hover effects */
+.card button,
+.card .form-button {
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.card button:hover:not(:disabled),
+.card .form-button:hover:not(:disabled) {
+    background-color: #2b6cb0;
+    transform: translateY(-2px);
+}
+
+.card button:active:not(:disabled),
+.card .form-button:active:not(:disabled) {
+    animation: pulse 0.2s;
 }
 
 /* Filter Dropdown */
@@ -422,6 +486,12 @@ select#genre {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     animation: slideInLeft 0.5s ease-out;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+select#genre:hover {
+    transform: translateY(-2px);
+    border-color: #3182ce;
 }
 
 /* Success and Error Messages (Default for Other Pages) */
@@ -432,6 +502,11 @@ select#genre {
     margin-bottom: 1rem;
     border-left: 4px solid #38a169;
     animation: bounceIn 0.5s ease-out;
+    transition: transform 0.3s ease;
+}
+
+.text-green-500:hover {
+    transform: translateY(-2px);
 }
 
 .text-red-500 {
@@ -441,6 +516,11 @@ select#genre {
     margin-bottom: 1rem;
     border-left: 4px solid #e53e3e;
     animation: bounceIn 0.5s ease-out;
+    transition: transform 0.3s ease;
+}
+
+.text-red-500:hover {
+    transform: translateY(-2px);
 }
 
 /* Footer */
@@ -494,6 +574,14 @@ footer {
         flex-direction: column;
         gap: 0.5rem;
     }
+
+    .dashboard-component:hover {
+        transform: translateY(-3px) scale(1.01); /* Reduced effect for smaller screens */
+    }
+
+    .card:hover {
+        transform: translateY(-3px) scale(1.01);
+    }
 }
 
 @media (max-width: 640px) {
@@ -509,5 +597,13 @@ footer {
 
     input, select {
         padding: 0.5rem;
+    }
+
+    .dashboard-component:hover {
+        transform: translateY(-2px) scale(1.005); /* Minimal effect for very small screens */
+    }
+
+    .card:hover {
+        transform: translateY(-2px) scale(1.005);
     }
 }
