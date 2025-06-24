@@ -4,7 +4,6 @@ $body_class = 'graphic-bg'; // Apply the graphic background
 $page_title = 'Admin Dashboard - Show Marketplace';
 
 // Check if user is logged in and is an admin
-session_start();
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
     header("Location: login.php?error=Please login as an admin to access this page.");
     exit;
@@ -44,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_show'])) {
 
     // If no errors, save the show to the database
     if (!isset($error)) {
-        $stmt = $pdo->prepare("INSERT INTO shows (title, genre, date, time, venue, price, description, image_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         try {
+            $stmt = $pdo->prepare("INSERT INTO shows (title, genre, date, time, venue, price, description, image_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if ($stmt->execute([$title, $genre, $date, $time, $venue, $price, $description, $image_url ?: null, $admin_id])) {
                 $success = "Show added successfully!";
             } else {
@@ -53,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_show'])) {
             }
         } catch (PDOException $e) {
             $error = "Database error: " . $e->getMessage();
+            error_log("Add show failed: " . $e->getMessage());
         }
     }
 }
@@ -92,13 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_show'])) {
 
     // If no errors, update the show in the database
     if (!isset($error)) {
-        $stmt = $pdo->prepare("UPDATE shows SET title = ?, genre = ?, date = ?, time = ?, venue = ?, price = ?, description = ?, image_url = ? WHERE id = ?");
         try {
+            $stmt = $pdo->prepare("UPDATE shows SET title = ?, genre = ?, date = ?, time = ?, venue = ?, price = ?, description = ?, image_url = ? WHERE id = ?");
             $result = $stmt->execute([$title, $genre, $date, $time, $venue, $price, $description, $image_url ?: null, $show_id]);
             error_log("Database update result: " . ($result ? "Success" : "Failure")); // Debug log
 
             if ($result) {
-                // Check if this is an AJAX request
                 $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
                 if ($isAjax) {
                     header('Content-Type: application/json');
@@ -131,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_show'])) {
             }
         } catch (PDOException $e) {
             $error = "Database error: " . $e->getMessage();
-            error_log("Database error: " . $e->getMessage()); // Debug log
+            error_log("Edit show failed: " . $e->getMessage()); // Debug log
             if ($isAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'message' => $error]);
@@ -152,12 +151,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_show'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_booking'])) {
     $booking_id = (int)$_POST['booking_id'];
 
-    // Delete the booking
-    $stmt = $pdo->prepare("DELETE FROM bookings WHERE id = ?");
-    if ($stmt->execute([$booking_id])) {
-        $success = "Booking deleted successfully.";
-    } else {
-        $error = "Failed to delete the booking. Please try again.";
+    try {
+        $stmt = $pdo->prepare("DELETE FROM bookings WHERE id = ?");
+        if ($stmt->execute([$booking_id])) {
+            $success = "Booking deleted successfully.";
+        } else {
+            $error = "Failed to delete the booking. Please try again.";
+        }
+    } catch (PDOException $e) {
+        $error = "Database error: " . $e->getMessage();
+        error_log("Delete booking failed: " . $e->getMessage());
     }
 }
 
@@ -165,12 +168,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_booking'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_show'])) {
     $show_id = (int)$_POST['show_id'];
 
-    // Delete the show (bookings will remain, with show_id set to NULL)
-    $stmt = $pdo->prepare("DELETE FROM shows WHERE id = ?");
-    if ($stmt->execute([$show_id])) {
-        $success = "Show deleted successfully. Existing bookings remain unaffected.";
-    } else {
-        $error = "Failed to delete the show. Please try again.";
+    try {
+        $stmt = $pdo->prepare("DELETE FROM shows WHERE id = ?");
+        if ($stmt->execute([$show_id])) {
+            $success = "Show deleted successfully. Existing bookings remain unaffected.";
+        } else {
+            $error = "Failed to delete the show. Please try again.";
+        }
+    } catch (PDOException $e) {
+        $error = "Database error: " . $e->getMessage();
+        error_log("Delete show failed: " . $e->getMessage());
     }
 }
 
@@ -182,124 +189,173 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     if (empty($message)) {
         $admin_chat_error = "Message cannot be empty.";
     } else {
-        // Insert the message into the messages table
-        $stmt = $pdo->prepare("INSERT INTO messages (sender_id, sender_type, receiver_id, receiver_type, message) 
-                               VALUES (?, 'admin', ?, 'user', ?)");
-        if ($stmt->execute([$admin_id, $receiver_id, $message])) {
-            $admin_chat_success = "Message sent successfully!";
-        } else {
-            $admin_chat_error = "Failed to send message. Please try again.";
+        try {
+            $stmt = $pdo->prepare("INSERT INTO messages (sender_id, sender_type, receiver_id, receiver_type, message) 
+                                   VALUES (?, 'admin', ?, 'user', ?)");
+            if ($stmt->execute([$admin_id, $receiver_id, $message])) {
+                $admin_chat_success = "Message sent successfully!";
+            } else {
+                $admin_chat_error = "Failed to send message. Please try again.";
+            }
+        } catch (PDOException $e) {
+            $admin_chat_error = "Database error: " . $e->getMessage();
+            error_log("Send message failed: " . $e->getMessage());
         }
     }
 }
 
 // Fetch all bookings
-$stmt = $pdo->prepare("SELECT b.id, b.user_id, b.show_id, b.tickets, b.total_price, b.status, b.created_at, 
-                       b.show_title AS show_title, u.name AS user_name 
-                       FROM bookings b 
-                       JOIN users u ON b.user_id = u.id 
-                       ORDER BY b.created_at DESC");
-$stmt->execute();
-$bookings = $stmt->fetchAll();
+$bookings = [];
+try {
+    $stmt = $pdo->prepare("SELECT b.id, b.user_id, b.show_id, b.tickets, b.total_price, b.status, b.created_at, 
+                           b.show_title AS show_title, u.name AS user_name 
+                           FROM bookings b 
+                           JOIN users u ON b.user_id = u.id 
+                           ORDER BY b.created_at DESC");
+    $stmt->execute();
+    $bookings = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Fetch bookings failed: " . $e->getMessage());
+}
 
 // Fetch all shows
-$stmt = $pdo->prepare("SELECT s.* FROM shows s ORDER BY s.date ASC");
-$stmt->execute();
-$all_shows = $stmt->fetchAll();
+$all_shows = [];
+try {
+    $stmt = $pdo->prepare("SELECT s.* FROM shows s ORDER BY s.date ASC");
+    $stmt->execute();
+    $all_shows = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Fetch shows failed: " . $e->getMessage());
+}
 
 // Fetch all users (excluding admins)
-$stmt = $pdo->prepare("SELECT id, name, email, phone FROM users WHERE is_admin = 0 ORDER BY name ASC");
-$stmt->execute();
-$all_users = $stmt->fetchAll();
+$all_users = [];
+try {
+    $stmt = $pdo->prepare("SELECT id, name, email, phone FROM users WHERE is_admin = 0 ORDER BY name ASC");
+    $stmt->execute();
+    $all_users = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Fetch users failed: " . $e->getMessage());
+}
 
 // Fetch bookings and transactions for each user
 $user_data = [];
 foreach ($all_users as $user) {
     $user_id = $user['id'];
 
-    // Fetch user's bookings
-    $stmt = $pdo->prepare("SELECT id, show_id, tickets, total_price, status, created_at, show_title, show_date, show_venue 
-                           FROM bookings 
-                           WHERE user_id = ? 
-                           ORDER BY created_at DESC");
-    $stmt->execute([$user_id]);
-    $user_bookings = $stmt->fetchAll();
+    try {
+        $stmt = $pdo->prepare("SELECT id, show_id, tickets, total_price, status, created_at, show_title, show_date, show_venue 
+                               FROM bookings 
+                               WHERE user_id = ? 
+                               ORDER BY created_at DESC");
+        $stmt->execute([$user_id]);
+        $user_bookings = $stmt->fetchAll();
 
-    // Fetch user's transactions
-    $stmt = $pdo->prepare("SELECT t.id, t.booking_id, t.amount, t.mpesa_receipt_number, t.phone_number, t.transaction_date, t.status 
-                           FROM transactions t 
-                           WHERE t.user_id = ? 
-                           ORDER BY t.transaction_date DESC");
-    $stmt->execute([$user_id]);
-    $user_transactions = $stmt->fetchAll();
+        $stmt = $pdo->prepare("SELECT t.id, t.booking_id, t.amount, t.mpesa_receipt_number, t.phone_number, t.transaction_date, t.status 
+                               FROM transactions t 
+                               WHERE t.user_id = ? 
+                               ORDER BY t.transaction_date DESC");
+        $stmt->execute([$user_id]);
+        $user_transactions = $stmt->fetchAll();
 
-    $user_data[$user_id] = [
-        'details' => $user,
-        'bookings' => $user_bookings,
-        'transactions' => $user_transactions
-    ];
+        $user_data[$user_id] = [
+            'details' => $user,
+            'bookings' => $user_bookings,
+            'transactions' => $user_transactions
+        ];
+    } catch (PDOException $e) {
+        error_log("Fetch user data failed for user $user_id: " . $e->getMessage());
+    }
 }
 
-// Data for charts
-// 1. Bookings per show
-$bookings_per_show_data = $pdo->query("SELECT b.show_title AS title, COUNT(b.id) AS booking_count 
-                                       FROM bookings b 
-                                       GROUP BY b.show_title")->fetchAll();
-$bookings_per_show_labels = array_column($bookings_per_show_data, 'title');
-$bookings_per_show_counts = array_column($bookings_per_show_data, 'booking_count');
+// Data for charts (with fallback if queries fail)
+$bookings_per_show_labels = [];
+$bookings_per_show_counts = [];
+try {
+    $bookings_per_show_data = $pdo->query("SELECT b.show_title AS title, COUNT(b.id) AS booking_count 
+                                           FROM bookings b 
+                                           GROUP BY b.show_title")->fetchAll();
+    $bookings_per_show_labels = array_column($bookings_per_show_data, 'title');
+    $bookings_per_show_counts = array_column($bookings_per_show_data, 'booking_count');
+} catch (PDOException $e) {
+    error_log("Fetch bookings per show failed: " . $e->getMessage());
+}
 
-// 2. Revenue per show
-$revenue_per_show_data = $pdo->query("SELECT b.show_title AS title, SUM(b.total_price) AS total_revenue 
-                                      FROM bookings b 
-                                      GROUP BY b.show_title")->fetchAll();
-$revenue_per_show_labels = array_column($revenue_per_show_data, 'title');
-$revenue_per_show_values = array_column($revenue_per_show_data, 'total_revenue');
+$revenue_per_show_labels = [];
+$revenue_per_show_values = [];
+try {
+    $revenue_per_show_data = $pdo->query("SELECT b.show_title AS title, SUM(b.total_price) AS total_revenue 
+                                          FROM bookings b 
+                                          GROUP BY b.show_title")->fetchAll();
+    $revenue_per_show_labels = array_column($revenue_per_show_data, 'title');
+    $revenue_per_show_values = array_column($revenue_per_show_data, 'total_revenue');
+} catch (PDOException $e) {
+    error_log("Fetch revenue per show failed: " . $e->getMessage());
+}
 
-// 3. Booking status distribution
-$status_distribution_data = $pdo->query("SELECT status, COUNT(id) AS count 
-                                         FROM bookings 
-                                         GROUP BY status")->fetchAll();
-$status_distribution_labels = array_column($status_distribution_data, 'status');
-$status_distribution_counts = array_column($status_distribution_data, 'count');
+$status_distribution_labels = [];
+$status_distribution_counts = [];
+try {
+    $status_distribution_data = $pdo->query("SELECT status, COUNT(id) AS count 
+                                             FROM bookings 
+                                             GROUP BY status")->fetchAll();
+    $status_distribution_labels = array_column($status_distribution_data, 'status');
+    $status_distribution_counts = array_column($status_distribution_data, 'count');
+} catch (PDOException $e) {
+    error_log("Fetch status distribution failed: " . $e->getMessage());
+}
 
 // Fetch users who have sent messages to the admin
-$stmt = $pdo->prepare("SELECT DISTINCT u.id, u.name 
-                       FROM messages m 
-                       JOIN users u ON m.sender_id = u.id 
-                       WHERE m.sender_type = 'user' AND m.receiver_id = ? AND m.receiver_type = 'admin'");
-$stmt->execute([$admin_id]);
-$chat_users = $stmt->fetchAll();
+$chat_users = [];
+try {
+    $stmt = $pdo->prepare("SELECT DISTINCT u.id, u.name 
+                           FROM messages m 
+                           JOIN users u ON m.sender_id = u.id 
+                           WHERE m.sender_type = 'user' AND m.receiver_id = ? AND m.receiver_type = 'admin'");
+    $stmt->execute([$admin_id]);
+    $chat_users = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Fetch chat users failed: " . $e->getMessage());
+}
 
 // Fetch initial unread counts for each user
 $unread_counts = [];
-$stmt = $pdo->prepare("SELECT m.sender_id, COUNT(m.id) as unread_count 
-                       FROM messages m 
-                       WHERE m.sender_type = 'user' AND m.receiver_id = ? AND m.receiver_type = 'admin' AND m.is_read = 0 
-                       GROUP BY m.sender_id");
-$stmt->execute([$admin_id]);
-$unread_counts_result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach ($unread_counts_result as $row) {
-    $unread_counts[$row['sender_id']] = $row['unread_count'];
+try {
+    $stmt = $pdo->prepare("SELECT m.sender_id, COUNT(m.id) as unread_count 
+                           FROM messages m 
+                           WHERE m.sender_type = 'user' AND m.receiver_id = ? AND m.receiver_type = 'admin' AND m.is_read = 0 
+                           GROUP BY m.sender_id");
+    $stmt->execute([$admin_id]);
+    $unread_counts_result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($unread_counts_result as $row) {
+        $unread_counts[$row['sender_id']] = $row['unread_count'];
+    }
+} catch (PDOException $e) {
+    error_log("Fetch unread counts failed: " . $e->getMessage());
 }
 
 // Fetch chat messages for the selected user
 $selected_user_id = isset($_GET['chat_user_id']) ? (int)$_GET['chat_user_id'] : (isset($chat_users[0]['id']) ? $chat_users[0]['id'] : 0);
 $chat_messages = [];
 if ($selected_user_id) {
-    $stmt = $pdo->prepare("SELECT m.*, u.name AS sender_name 
-                           FROM messages m 
-                           LEFT JOIN users u ON m.sender_id = u.id AND m.sender_type = 'user' 
-                           WHERE (m.sender_id = ? AND m.sender_type = 'user' AND m.receiver_id = ? AND m.receiver_type = 'admin') 
-                              OR (m.sender_id = ? AND m.sender_type = 'admin' AND m.receiver_id = ? AND m.receiver_type = 'user') 
-                           ORDER BY m.created_at ASC");
-    $stmt->execute([$selected_user_id, $admin_id, $admin_id, $selected_user_id]);
-    $chat_messages = $stmt->fetchAll();
+    try {
+        $stmt = $pdo->prepare("SELECT m.*, u.name AS sender_name 
+                               FROM messages m 
+                               LEFT JOIN users u ON m.sender_id = u.id AND m.sender_type = 'user' 
+                               WHERE (m.sender_id = ? AND m.sender_type = 'user' AND m.receiver_id = ? AND m.receiver_type = 'admin') 
+                                  OR (m.sender_id = ? AND m.sender_type = 'admin' AND m.receiver_id = ? AND m.receiver_type = 'user') 
+                               ORDER BY m.created_at ASC");
+        $stmt->execute([$selected_user_id, $admin_id, $admin_id, $selected_user_id]);
+        $chat_messages = $stmt->fetchAll();
 
-    // Mark messages from user as read
-    $stmt = $pdo->prepare("UPDATE messages m 
-                           SET is_read = 1 
-                           WHERE sender_id = ? AND sender_type = 'user' AND receiver_id = ? AND m.receiver_type = 'admin' AND is_read = 0");
-    $stmt->execute([$selected_user_id, $admin_id]);
+        // Mark messages from user as read
+        $stmt = $pdo->prepare("UPDATE messages m 
+                               SET is_read = 1 
+                               WHERE sender_id = ? AND sender_type = 'user' AND receiver_id = ? AND m.receiver_type = 'admin' AND is_read = 0");
+        $stmt->execute([$selected_user_id, $admin_id]);
+    } catch (PDOException $e) {
+        error_log("Fetch chat messages failed: " . $e->getMessage());
+    }
 }
 
 include 'includes/header.php';
@@ -332,73 +388,60 @@ body.modal-open {
     <?php if (isset($error)): ?>
         <p class="text-red-500 text-center"><?php echo htmlspecialchars($error); ?></p>
     <?php endif; ?>
+    <?php if (isset($admin_chat_success)): ?>
+        <p class="text-green-500 text-center"><?php echo htmlspecialchars($admin_chat_success); ?></p>
+    <?php endif; ?>
+    <?php if (isset($admin_chat_error)): ?>
+        <p class="text-red-500 text-center"><?php echo htmlspecialchars($admin_chat_error); ?></p>
+    <?php endif; ?>
 
     <!-- Add Show Form -->
     <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Add New Show</h2>
-
         <form method="POST" class="space-y-4">
             <input type="hidden" name="add_show" value="1">
-
-            <!-- Show Title -->
             <div>
                 <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Show Title</label>
                 <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-
-            <!-- Genre -->
             <div>
                 <label for="genre" class="block text-sm font-medium text-gray-700 mb-1">Genre</label>
                 <input type="text" id="genre" name="genre" value="<?php echo htmlspecialchars($_POST['genre'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-
-            <!-- Date -->
             <div>
                 <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                 <input type="date" id="date" name="date" value="<?php echo htmlspecialchars($_POST['date'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-
-            <!-- Time -->
             <div>
                 <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
                 <input type="time" id="time" name="time" value="<?php echo htmlspecialchars($_POST['time'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-
-            <!-- Venue -->
             <div>
                 <label for="venue" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
                 <input type="text" id="venue" name="venue" value="<?php echo htmlspecialchars($_POST['venue'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-
-            <!-- Price -->
             <div>
                 <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price per Ticket ($)</label>
                 <input type="number" id="price" name="price" step="0.01" value="<?php echo htmlspecialchars($_POST['price'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-
-            <!-- Description -->
             <div>
                 <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea id="description" name="description" 
                           class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
                           rows="3" required><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
             </div>
-
-            <!-- Image URL -->
             <div>
                 <label for="image_url" class="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
                 <input type="url" id="image_url" name="image_url" value="<?php echo htmlspecialchars($_POST['image_url'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
                        placeholder="https://example.com/image.jpg">
             </div>
-
-            <!-- Submit Button -->
             <button type="submit" class="form-button w-full bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition">
                 Add Show
             </button>
@@ -419,8 +462,6 @@ body.modal-open {
                             <p><strong>Email:</strong> <?php echo htmlspecialchars($data['details']['email'] ?: 'Not provided'); ?></p>
                             <p><strong>Phone:</strong> <?php echo htmlspecialchars($data['details']['phone'] ?: 'Not provided'); ?></p>
                         </div>
-
-                        <!-- User's Bookings -->
                         <h4 class="text-lg font-medium mb-2 text-gray-800">Bookings</h4>
                         <?php if (empty($data['bookings'])): ?>
                             <p class="text-gray-600">No bookings found for this user.</p>
@@ -461,8 +502,6 @@ body.modal-open {
                                 </table>
                             </div>
                         <?php endif; ?>
-
-                        <!-- User's Transactions -->
                         <h4 class="text-lg font-medium mb-2 text-gray-800">Transactions</h4>
                         <?php if (empty($data['transactions'])): ?>
                             <p class="text-gray-600">No transactions found for this user.</p>
@@ -523,12 +562,10 @@ body.modal-open {
                         <p><strong>Price:</strong> $<span class="show-price"><?php echo number_format($show['price'], 2); ?></span> per ticket</p>
                         <p><strong>Description:</strong> <span class="show-description"><?php echo htmlspecialchars($show['description']); ?></span></p>
                         <div class="flex space-x-2 mt-2">
-                            <!-- Edit Button -->
                             <button onclick="openEditModal(<?php echo $show['id']; ?>, '<?php echo htmlspecialchars(addslashes($show['title'])); ?>', '<?php echo htmlspecialchars(addslashes($show['genre'])); ?>', '<?php echo $show['date']; ?>', '<?php echo $show['time']; ?>', '<?php echo htmlspecialchars(addslashes($show['venue'])); ?>', <?php echo $show['price']; ?>, '<?php echo htmlspecialchars(addslashes($show['description'])); ?>', '<?php echo htmlspecialchars(addslashes($show['image_url'] ?? '')); ?>', 'show-card-<?php echo $show['id']; ?>')" 
                                     class="bg-blue-600 text-white p-2 rounded-lg flex-1">
                                 Edit Show
                             </button>
-                            <!-- Delete Button -->
                             <form method="POST" class="flex-1" onsubmit="return confirm('Are you sure you want to delete this show? Existing bookings will remain unaffected. This action cannot be undone.');">
                                 <input type="hidden" name="show_id" value="<?php echo $show['id']; ?>">
                                 <button type="submit" name="delete_show" class="bg-red-600 text-white p-2 rounded-lg w-full">
@@ -545,92 +582,57 @@ body.modal-open {
     <!-- Edit Show Modal -->
     <div id="editShowModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 overflow-hidden">
         <div class="bg-white rounded-lg shadow-md w-full max-w-2xl flex flex-col max-h-[90vh]">
-            <!-- Modal Header -->
             <div class="p-6 border-b flex-shrink-0">
                 <h2 class="text-2xl font-bold text-gray-800">Edit Show</h2>
             </div>
-
-            <!-- Modal Body (Scrollable) -->
             <div class="modal-scrollable flex-1 p-6">
                 <form id="editShowForm" method="POST" class="space-y-4">
                     <input type="hidden" name="edit_show" value="1">
                     <input type="hidden" id="edit_show_id" name="show_id">
-                    <!-- Show Title -->
                     <div>
                         <label for="edit_title" class="block text-sm font-medium text-gray-700 mb-1">Show Title</label>
                         <input type="text" id="edit_title" name="title" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
-
-                    <!-- Genre -->
                     <div>
                         <label for="edit_genre" class="block text-sm font-medium text-gray-700 mb-1">Genre</label>
                         <input type="text" id="edit_genre" name="genre" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
-
-                    <!-- Date -->
                     <div>
                         <label for="edit_date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                         <input type="date" id="edit_date" name="date" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
-
-                    <!-- Time -->
                     <div>
                         <label for="edit_time" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
                         <input type="time" id="edit_time" name="time" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
-
-                    <!-- Venue -->
                     <div>
                         <label for="edit_venue" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
                         <input type="text" id="edit_venue" name="venue" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
-
-                    <!-- Price -->
                     <div>
                         <label for="edit_price" class="block text-sm font-medium text-gray-700 mb-1">Price per Ticket ($)</label>
                         <input type="number" id="edit_price" name="price" step="0.01" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                     </div>
-
-                    <!-- Description -->
                     <div>
                         <label for="edit_description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea id="edit_description" name="description" 
                                   class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                   rows="10" required></textarea>
                     </div>
-
-                    <!-- Image URL -->
                     <div>
                         <label for="edit_image_url" class="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
                         <input type="url" id="edit_image_url" name="image_url" 
                                class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                placeholder="https://example.com/image.jpg">
                     </div>
-
-                    <!-- Additional Fields to Ensure Scrolling -->
-                    <div>
-                        <label for="edit_extra_field1" class="block text-sm font-medium text-gray-700 mb-1">Extra Field 1 (Testing Scroll)</label>
-                        <input type="text" id="edit_extra_field1" name="extra_field1" 
-                               class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                               placeholder="Extra field for testing">
-                    </div>
-
-                    <div>
-                        <label for="edit_extra_field2" class="block text-sm font-medium text-gray-700 mb-1">Extra Field 2 (Testing Scroll)</label>
-                        <input type="text" id="edit_extra_field2" name="extra_field2" 
-                               class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                               placeholder="Extra field for testing">
-                    </div>
                 </form>
             </div>
-
-            <!-- Modal Footer -->
             <div class="p-6 border-t flex space-x-2 flex-shrink-0">
                 <button type="button" onclick="document.getElementById('editShowForm').dispatchEvent(new Event('submit'));" 
                         class="form-button w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition">
@@ -696,19 +698,14 @@ body.modal-open {
 
     <!-- Charts Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 max-w-6xl mx-auto">
-        <!-- Bookings per Show -->
         <div class="card bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 mb-2">Bookings per Show</h3>
             <canvas id="bookingsPerShowChart"></canvas>
         </div>
-
-        <!-- Revenue per Show -->
         <div class="card bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 mb-2">Revenue per Show</h3>
             <canvas id="revenuePerShowChart"></canvas>
         </div>
-
-        <!-- Booking Status Distribution -->
         <div class="card bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 mb-2">Booking Status Distribution</h3>
             <canvas id="statusDistributionChart"></canvas>
@@ -719,14 +716,6 @@ body.modal-open {
     <div class="mt-10 max-w-6xl mx-auto">
         <h2 class="text-2xl font-bold text-white mb-4">User Messages</h2>
         <div class="card bg-white p-6 rounded-lg shadow-md">
-            <?php if (isset($admin_chat_success)): ?>
-                <p class="text-green-500"><?php echo htmlspecialchars($admin_chat_success); ?></p>
-            <?php endif; ?>
-            <?php if (isset($admin_chat_error)): ?>
-                <p class="text-red-500"><?php echo htmlspecialchars($admin_chat_error); ?></p>
-            <?php endif; ?>
-
-            <!-- User List -->
             <div class="mb-4">
                 <h3 class="text-lg font-medium text-gray-800 mb-2">Select a User to Chat</h3>
                 <?php if (empty($chat_users)): ?>
@@ -749,8 +738,6 @@ body.modal-open {
                     </div>
                 <?php endif; ?>
             </div>
-
-            <!-- Chat Window -->
             <?php if ($selected_user_id): ?>
                 <div id="admin-chat-window" class="border rounded-lg p-4 h-64 overflow-y-auto bg-gray-50 mb-4">
                     <?php if (empty($chat_messages)): ?>
@@ -767,7 +754,6 @@ body.modal-open {
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-                <!-- Message Input -->
                 <form method="POST">
                     <input type="hidden" name="receiver_id" value="<?php echo $selected_user_id; ?>">
                     <div class="flex space-x-2">
@@ -781,7 +767,6 @@ body.modal-open {
     </div>
 </div>
 
-<!-- Chart.js Scripts -->
 <script>
     // Bookings per Show Chart (Bar Chart)
     const bookingsPerShowCtx = document.getElementById('bookingsPerShowChart').getContext('2d');
@@ -885,10 +870,8 @@ body.modal-open {
         }
     });
 
-    // JavaScript for Notifications and Chat Updates
     const selectedUserId = <?php echo json_encode($selected_user_id); ?>;
 
-    // Function to update unread message counts
     function updateUnreadCounts() {
         fetch('api/notifications.php?action=get_unread_count')
             .then(response => response.json())
@@ -896,13 +879,11 @@ body.modal-open {
                 const unreadCounts = data.unread_counts || [];
                 const userList = document.getElementById('chat-users-list');
 
-                // Create a map of unread counts
                 const unreadMap = {};
                 unreadCounts.forEach(count => {
                     unreadMap[count.sender_id] = count.unread_count;
                 });
 
-                // Update each user's badge
                 userList.querySelectorAll('a[data-user-id]').forEach(userElement => {
                     const userId = userElement.getAttribute('data-user-id');
                     const unreadCount = unreadMap[userId] || 0;
@@ -924,7 +905,6 @@ body.modal-open {
             .catch(error => console.error('Error fetching unread counts:', error));
     }
 
-    // Function to update chat messages
     function updateChatMessages() {
         if (!selectedUserId) return;
 
@@ -959,13 +939,11 @@ body.modal-open {
             .catch(error => console.error('Error fetching messages:', error));
     }
 
-    // Initial update
     updateUnreadCounts();
     if (selectedUserId) {
         updateChatMessages();
     }
 
-    // Poll for updates every 10 seconds
     setInterval(() => {
         updateUnreadCounts();
         if (selectedUserId) {
@@ -973,19 +951,15 @@ body.modal-open {
         }
     }, 10000);
 
-    // JavaScript for Edit Show Modal
-    let currentShowCardId = null; // Track the ID of the show card being edited
+    let currentShowCardId = null;
 
     function openEditModal(id, title, genre, date, time, venue, price, description, image_url, showCardId) {
-        // Save the current show card ID and lock the background
         currentShowCardId = showCardId;
         document.body.classList.add('modal-open');
 
-        // Show the modal
         const modal = document.getElementById('editShowModal');
         modal.classList.remove('hidden');
 
-        // Populate the form fields
         document.getElementById('edit_show_id').value = id;
         document.getElementById('edit_title').value = title;
         document.getElementById('edit_genre').value = genre;
@@ -996,11 +970,9 @@ body.modal-open {
         document.getElementById('edit_description').value = description;
         document.getElementById('edit_image_url').value = image_url;
 
-        // Ensure the modal body starts at the top when opened
         const modalBody = document.querySelector('#editShowModal .modal-scrollable');
         modalBody.scrollTop = 0;
 
-        // Scroll the show card into view before opening the modal
         const showCard = document.getElementById(showCardId);
         if (showCard) {
             showCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1008,73 +980,62 @@ body.modal-open {
     }
 
     function closeEditModal() {
-        // Unlock the background
         document.body.classList.remove('modal-open');
-
-        // Hide the modal
         document.getElementById('editShowModal').classList.add('hidden');
 
-        // Scroll back to the specific show card
         if (currentShowCardId) {
             const showCard = document.getElementById(currentShowCardId);
             if (showCard) {
                 showCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            currentShowCardId = null; // Reset the ID
+            currentShowCardId = null;
         }
     }
 
-    // Handle form submission via AJAX
     document.getElementById('editShowForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-        console.log("Form submitted"); // Debug log
+        event.preventDefault();
+        console.log("Form submitted");
 
         const formData = new FormData(this);
         for (let [key, value] of formData.entries()) {
-            console.log(key + ': ' + value); // Debug log
+            console.log(key + ': ' + value);
         }
 
         fetch('admin_dashboard.php', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest' // Indicate this is an AJAX request
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => {
-            console.log("Response status:", response.status); // Debug log
+            console.log("Response status:", response.status);
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
             }
             return response.json();
         })
         .then(data => {
-            console.log("Response data:", data); // Debug log
+            console.log("Response data:", data);
             if (data.success) {
-                // Update the specific show card with the new data
                 const showCard = document.getElementById(currentShowCardId);
                 if (showCard) {
                     const show = data.show;
-
-                    // Update the image (if it exists)
                     const imageElement = showCard.querySelector('.show-image');
                     if (imageElement) {
                         if (show.image_url) {
                             imageElement.src = show.image_url;
                             imageElement.alt = show.title;
                         } else {
-                            imageElement.remove(); // Remove the image if the URL is empty
+                            imageElement.remove();
                         }
                     } else if (show.image_url) {
-                        // Add a new image if it didn't exist before
                         const newImage = document.createElement('img');
                         newImage.src = show.image_url;
                         newImage.alt = show.title;
                         newImage.className = 'w-full h-48 object-cover rounded-md mb-4 show-image';
                         showCard.insertBefore(newImage, showCard.firstChild);
                     }
-
-                    // Update the text fields
                     showCard.querySelector('.show-title').textContent = show.title;
                     showCard.querySelector('.show-genre').textContent = show.genre;
                     showCard.querySelector('.show-date').textContent = show.date;
@@ -1082,23 +1043,16 @@ body.modal-open {
                     showCard.querySelector('.show-venue').textContent = show.venue;
                     showCard.querySelector('.show-price').textContent = parseFloat(show.price).toFixed(2);
                     showCard.querySelector('.show-description').textContent = show.description;
-
-                    // Update the Edit button's onclick parameters
                     const editButton = showCard.querySelector('button[onclick^="openEditModal"]');
                     editButton.setAttribute('onclick', `openEditModal(${show.id}, '${show.title.replace(/'/g, "\\'")}', '${show.genre.replace(/'/g, "\\'")}', '${show.date}', '${show.time}', '${show.venue.replace(/'/g, "\\'")}', ${show.price}, '${show.description.replace(/'/g, "\\'")}', '${show.image_url ? show.image_url.replace(/'/g, "\\'") : ''}', '${currentShowCardId}')`);
                 }
-
-                // Show success message
                 const successMessage = document.createElement('p');
                 successMessage.className = 'text-green-500 text-center';
                 successMessage.textContent = data.message;
                 document.querySelector('.py-6').insertBefore(successMessage, document.querySelector('.py-6').firstChild);
                 setTimeout(() => successMessage.remove(), 3000);
-
-                // Close the modal
                 closeEditModal();
             } else {
-                // Show error message
                 const errorMessage = document.createElement('p');
                 errorMessage.className = 'text-red-500 text-center';
                 errorMessage.textContent = data.message || 'Failed to update show.';
@@ -1116,7 +1070,6 @@ body.modal-open {
         });
     });
 
-    // Close modal when clicking outside
     document.getElementById('editShowModal').addEventListener('click', function(event) {
         if (event.target === this) {
             closeEditModal();
