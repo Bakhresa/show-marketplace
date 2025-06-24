@@ -1,4 +1,5 @@
 <?php
+session_start(); // Initialize session
 require_once 'includes/config.php';
 $body_class = 'graphic-bg'; // Apply the graphic background
 $page_title = 'Admin Dashboard - Show Marketplace';
@@ -9,12 +10,13 @@ if (!isset($pdo) || !$pdo instanceof PDO) {
 }
 
 // Check if user is logged in and is an admin
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+if (!isset($_SESSION['user_id']) || !is_numeric($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
+    error_log("Unauthorized access attempt to admin dashboard. User ID: " . ($_SESSION['user_id'] ?? 'Not set') . ", is_admin: " . ($_SESSION['is_admin'] ?? 'Not set') . " at " . date('Y-m-d H:i:s'));
     header("Location: login.php?error=Please login as an admin to access this page.");
     exit;
 }
 
-$admin_id = $_SESSION['user_id'];
+$admin_id = (int)$_SESSION['user_id'];
 
 // Handle adding a new show
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_show'])) {
@@ -1052,11 +1054,11 @@ body.modal-open {
     // Helper function for HTML escaping in JavaScript
     function htmlspecialchars(str) {
         return str
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(/&/g, "&")
+            .replace(/</g, "<")
+            .replace(/>/g, ">")
+            .replace(/"/g, "")
+            .replace(/'/g, "'");
     }
 </script>
 
