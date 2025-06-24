@@ -5,7 +5,7 @@ $page_title = 'Home - Show Marketplace'; // Set the page title
 
 // Redirect logged-in users to dashboard
 if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
+    header("Location: user_dashboard.php");
     exit;
 }
 

@@ -119,7 +119,7 @@
             <nav>
                 <a href="index.php" class="text-white hover:underline">Home</a>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'dashboard.php'; ?>" 
+                    <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>" 
                        class="text-white hover:underline ml-4">
                         Dashboard
                     </a>
