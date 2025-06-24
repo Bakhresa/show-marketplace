@@ -231,10 +231,14 @@ try {
 // Fetch all users (excluding admins)
 $all_users = [];
 try {
-    $stmt = $pdo->prepare("SELECT id, name, email, phone FROM users WHERE is_admin = 0 ORDER BY name ASC");
+    $stmt = $pdo->prepare("SELECT id, name, email, phone, created_at FROM users WHERE is_admin = 0 ORDER BY name ASC");
     $stmt->execute();
     $all_users = $stmt->fetchAll();
+    if (empty($all_users)) {
+        error_log("No non-admin users found in the database.");
+    }
 } catch (PDOException $e) {
+    $error = "Failed to fetch users: " . $e->getMessage();
     error_log("Fetch users failed: " . $e->getMessage());
 }
 
@@ -258,10 +262,15 @@ foreach ($all_users as $user) {
         $stmt->execute([$user_id]);
         $user_transactions = $stmt->fetchAll();
 
+        $total_bookings = count($user_bookings);
+        $total_spent = array_sum(array_column($user_transactions, 'amount'));
+
         $user_data[$user_id] = [
             'details' => $user,
             'bookings' => $user_bookings,
-            'transactions' => $user_transactions
+            'transactions' => $user_transactions,
+            'total_bookings' => $total_bookings,
+            'total_spent' => $total_spent
         ];
     } catch (PDOException $e) {
         error_log("Fetch user data failed for user $user_id: " . $e->getMessage());
@@ -451,8 +460,10 @@ body.modal-open {
     <!-- Users Overview Section -->
     <div class="mb-10 max-w-6xl mx-auto">
         <h2 class="text-2xl font-bold text-white mb-4">Users Overview</h2>
-        <?php if (empty($all_users)): ?>
-            <p class="text-gray-200 text-center">No users found.</p>
+        <?php if (isset($error) && strpos($error, 'fetch users') !== false): ?>
+            <p class="text-red-500 text-center">Error loading users: <?php echo htmlspecialchars($error); ?></p>
+        <?php elseif (empty($all_users)): ?>
+            <p class="text-gray-200 text-center">No non-admin users found. Add users via registration or check the database.</p>
         <?php else: ?>
             <div class="space-y-6">
                 <?php foreach ($user_data as $user_id => $data): ?>
@@ -461,6 +472,9 @@ body.modal-open {
                         <div class="mb-4">
                             <p><strong>Email:</strong> <?php echo htmlspecialchars($data['details']['email'] ?: 'Not provided'); ?></p>
                             <p><strong>Phone:</strong> <?php echo htmlspecialchars($data['details']['phone'] ?: 'Not provided'); ?></p>
+                            <p><strong>Registered Since:</strong> <?php echo htmlspecialchars($data['details']['created_at'] ?: 'N/A'); ?></p>
+                            <p><strong>Total Bookings:</strong> <?php echo htmlspecialchars($data['total_bookings']); ?></p>
+                            <p><strong>Total Spent:</strong> $<?php echo number_format($data['total_spent'], 2); ?></p>
                         </div>
                         <h4 class="text-lg font-medium mb-2 text-gray-800">Bookings</h4>
                         <?php if (empty($data['bookings'])): ?>
@@ -752,8 +766,8 @@ body.modal-open {
                                 <p class="text-xs text-gray-500 mt-1"><?php echo htmlspecialchars($message['created_at']); ?></p>
                             </div>
                         <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
+                    </div>
+                <?php endif; ?>
                 <form method="POST">
                     <input type="hidden" name="receiver_id" value="<?php echo $selected_user_id; ?>">
                     <div class="flex space-x-2">
