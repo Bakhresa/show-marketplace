@@ -104,10 +104,11 @@ body.login-page {
     background: rgba(255, 255, 255, 0.95);
     max-width: 400px;
     width: 100%;
-    padding: 2rem;
+    padding: 1.5rem; /* Reduced padding for smaller screens */
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     animation: slideInLeft 0.5s ease-out;
+    margin: 0 auto; /* Center the form */
 }
 
 /* Tab Group */
@@ -128,6 +129,7 @@ body.login-page {
     background: #f7fafc;
     cursor: pointer;
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+    font-size: 14px; /* Smaller font for mobile */
 }
 
 .tab:hover {
@@ -168,7 +170,10 @@ body.login-page {
     border-radius: 8px;
     padding: 0.75rem 1rem;
     width: 100%;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    font-size: 16px; /* Ensure readable font size on mobile */
+    -webkit-appearance: none; /* Remove default mobile styling */
+    margin-bottom: 1rem; /* Add space between inputs */
+    box-sizing: border-box; /* Ensure padding doesn’t affect width */
 }
 
 .register-form-container input:focus,
@@ -177,6 +182,7 @@ body.login-page {
     border-color: #3182ce;
     animation: glow 0.6s infinite;
     transform: scale(1.02);
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
 /* Password Field */
@@ -568,7 +574,13 @@ footer {
 
     .register-form-container,
     .login-form-container {
-        padding: 1.5rem;
+        padding: 1rem; /* Further reduced for small screens */
+        max-width: 90%; /* Allow form to take more space */
+    }
+
+    .tab {
+        font-size: 12px; /* Even smaller for very small screens */
+        padding: 0.5rem;
     }
 
     .welcome-section {
@@ -615,9 +627,17 @@ footer {
         padding: 0.5rem 1rem;
         width: 100%;
         text-align: center;
+        font-size: 14px; /* Smaller button text */
     }
 
-    input, select {
+    .register-form-container input[type="text"],
+    .register-form-container input[type="email"],
+    .register-form-container input[type="tel"],
+    .register-form-container input[type="password"],
+    .login-form-container input[type="email"],
+    .login-form-container input[type="tel"],
+    .login-form-container input[type="password"] {
+        font-size: 14px; /* Smaller input text */
         padding: 0.5rem;
     }
 
