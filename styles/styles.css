@@ -344,4 +344,18 @@ footer {
         font-size: 14px;
         padding: 0.5rem;
     }
+    body.register-page,
+    body.login-page {
+        padding: 0.5rem;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .form-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: auto;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
 }
