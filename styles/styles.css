@@ -171,7 +171,6 @@ body.login-page {
     padding: 0.75rem 1rem;
     width: 100%;
     font-size: 16px; /* Ensure readable font size on mobile */
-    -webkit-appearance: none; /* Remove default mobile styling */
     margin-bottom: 1rem; /* Add space between inputs */
     box-sizing: border-box; /* Ensure padding doesn’t affect width */
 }
