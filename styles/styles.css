@@ -1,7 +1,12 @@
+/* ─── Reset and Global ───────────────────────────── */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+html, body {
+    height: 100%;
 }
 
 body {
@@ -11,15 +16,10 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    -webkit-text-size-adjust: 100%;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-
-/* Keyframe Animations */
+/* ─── Keyframe Animations ────────────────────────── */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -30,56 +30,38 @@ html, body {
     to { transform: translateX(0); opacity: 1; }
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.95); }
-    100% { transform: scale(1); }
-}
-
-@keyframes bounceIn {
-    0% { transform: translateY(-10px); opacity: 0; }
-    60% { transform: translateY(3px); opacity: 1; }
-    100% { transform: translateY(0); }
-}
-
-@keyframes underline {
-    from { width: 0; }
-    to { width: 100%; }
-}
-
-@keyframes glow {
-    0% { box-shadow: 0 0 0 0 rgba(49, 130, 206, 0.3); }
-    50% { box-shadow: 0 0 10px 2px rgba(49, 130, 206, 0.5); }
-    100% { box-shadow: 0 0 0 0 rgba(49, 130, 206, 0.3); }
-}
-
 @keyframes fadeSlide {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Background Image for Register and Login Pages */
+/* ─── Auth Page Background ───────────────────────── */
 body.register-page,
 body.login-page {
-    background-image: url('/market/images/bakhresa.jpg') !important;
+    background-image: url('/market/images/bakhresa.jpg');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
-    background-color: #1a202c; /* Fallback color for debugging */
+    background-color: #1a202c;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 1rem;
 }
 
-/* Welcome Section on Index Page */
+/* ─── Welcome Section ────────────────────────────── */
 .welcome-section {
     background-image: url('images/backImage2.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    flex: 1 0 auto; /* Allow the section to grow but not shrink below content */
+    flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -93,264 +75,72 @@ body.login-page {
     color: #1e40af;
     text-decoration: underline;
 }
-
 .welcome-section a:hover {
     color: #1e3a8a;
 }
 
-/* Register and Login Form Container */
+/* ─── Form Containers ────────────────────────────── */
 .register-form-container,
 .login-form-container {
     background: rgba(255, 255, 255, 0.95);
-    max-width: 400px;
-    width: 100%;
-    padding: 1.5rem; /* Reduced padding for smaller screens */
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    animation: slideInLeft 0.5s ease-out;
-    margin: 0 auto; /* Center the form */
+    max-width: 100%;
+    width: 90%;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
 }
 
-/* Tab Group */
+/* ─── Tab Styling ────────────────────────────────── */
 .tab-group {
     display: flex;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
-
 .tab {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.5rem;
     text-align: center;
     font-weight: 500;
     color: #4a5568;
     background: #f7fafc;
     cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-    font-size: 14px; /* Smaller font for mobile */
+    font-size: 14px;
 }
-
-.tab:hover {
-    background-color: #edf2f7;
-    transform: translateY(-2px);
-}
-
+.tab:active,
 .tab.active {
     background: #1a202c;
     color: #ffffff;
 }
-
 .tab-icon {
     margin-right: 0.5rem;
 }
 
-/* Form Styling */
-.register-form-container h1,
-.login-form-container h1 {
-    color: #1a202c;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.register-form-container label,
-.login-form-container label {
-    color: #1a202c;
-    font-weight: 500;
-}
-
-.register-form-container input[type="text"],
-.register-form-container input[type="email"],
-.register-form-container input[type="tel"],
-.register-form-container input[type="password"],
-.login-form-container input[type="email"],
-.login-form-container input[type="tel"],
-.login-form-container input[type="password"] {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    width: 100%;
-    font-size: 16px; /* Ensure readable font size on mobile */
-    margin-bottom: 1rem; /* Add space between inputs */
-    box-sizing: border-box; /* Ensure padding doesn’t affect width */
-}
-
-.register-form-container input:focus,
-.login-form-container input:focus {
-    outline: none;
-    border-color: #3182ce;
-    animation: glow 0.6s infinite;
-    transform: scale(1.02);
-    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-}
-
-/* Password Field */
-.register-form-container .relative,
-.login-form-container .relative {
-    position: relative;
-}
-
-.register-form-container .password-toggle,
-.login-form-container .password-toggle {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #4a5568;
-    transition: color 0.3s ease;
-}
-
-.register-form-container .password-toggle:hover,
-.login-form-container .password-toggle:hover {
-    color: #3182ce;
-}
-
-/* Field Transitions */
-.field-visible {
-    display: block;
-    animation: fadeSlide 0.3s ease forwards;
-}
-
-.field-hidden {
-    display: none;
-    opacity: 0;
-}
-
-/* Error Messages */
-.error-message {
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-    min-height: 1rem;
-    transition: opacity 0.3s ease;
-}
-
-/* Password Strength Bar */
-.password-strength {
-    height: 8px;
-    width: 0;
-    background-color: #e2e8f0;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-    text-align: center;
-    font-size: 0.75rem;
-    color: #fff;
-    line-height: 8px;
-    transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-/* Register/Login Button */
-.register-btn {
-    background-color: #1a202c;
-    color: #ffffff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.register-btn:disabled {
-    background-color: #a0aec0;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.register-btn:hover:not(:disabled) {
-    background-color: #2d3748;
-    transform: translateY(-2px);
-}
-
-.register-btn:active:not(:disabled) {
-    animation: pulse 0.2s;
-}
-
-/* Success and Error Messages */
-body.register-page .text-red-500,
-body.login-page .text-red-500 {
-    background: rgba(255, 245, 245, 0.9);
-    padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    border-left: 4px solid #e53e3e;
-    animation: bounceIn 0.5s ease-out;
-}
-
-body.register-page .text-green-500,
-body.login-page .text-green-500 {
-    background: rgba(240, 255, 244, 0.9);
-    padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    border-left: 4px solid #38a169;
-    animation: bounceIn 0.5s ease-out;
-}
-
-/* Navigation Bar */
-nav {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-nav a {
-    position: relative;
-    transition: color 0.3s ease, transform 0.3s ease;
-}
-
-nav a:hover {
-    color: #e2e8f0;
-    transform: translateY(-2px);
-}
-
-nav a::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: #e2e8f0;
-    transition: width 0.3s ease;
-}
-
-nav a:hover::after {
-    animation: underline 0.3s forwards;
-}
-
-/* Headings */
+/* ─── Form Labels & Fields ───────────────────────── */
 h1, h2 {
     font-weight: 700;
     color: #1a202c;
     animation: fadeIn 0.5s ease-in;
 }
-
 h1 {
     font-size: 2rem;
     margin-bottom: 1.5rem;
 }
-
 h2 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
 
-/* Form Styling (Default for Other Pages) */
 form {
-    max-width: 500px;
+    width: 90%;
     margin: 0 auto;
-    background: #ffffff;
-    padding: 1.5rem;
+    background: #fff;
+    padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     animation: slideInLeft 0.5s ease-out;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-form:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 input[type="text"],
@@ -363,190 +153,139 @@ select {
     border-radius: 4px;
     padding: 0.75rem;
     width: 100%;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    font-size: 16px;
+    margin-bottom: 0.75rem;
 }
-
 input:focus,
 select:focus {
     outline: none;
     border-color: #3182ce;
-    animation: glow 0.6s infinite;
-    transform: scale(1.02);
+    box-shadow: 0 0 5px rgba(49, 130, 206, 0.5);
 }
 
-/* Radio Buttons (For Other Pages) */
-.radio-group {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    animation: fadeIn 0.5s ease-in;
+/* ─── Password Toggle ────────────────────────────── */
+.relative {
+    position: relative;
 }
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #4a5568;
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
-    transition: color 0.3s ease, transform 0.3s ease;
-}
-
-.radio-group label:hover {
-    color: #3182ce;
-    transform: translateY(-2px);
-}
-
-.radio-group input[type="radio"] {
-    margin-right: 0.5rem;
-    accent-color: #3182ce;
-    transition: transform 0.2s ease;
-}
-
-.radio-group input[type="radio"]:hover {
-    transform: scale(1.1);
-}
-
-/* Labels */
-label {
-    font-size: 0.875rem;
-    font-weight: 500;
     color: #4a5568;
-    margin-bottom: 0.25rem;
-    display: block;
+    font-size: 16px;
 }
-
-/* Buttons (Default for Other Pages) */
-button, a.bg-blue-600 {
-    background-color: #3182ce;
-    color: #ffffff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    font-weight: 500;
-    text-align: center;
-    display: inline-block;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    text-decoration: none;
-}
-
-button:hover:not(:disabled), a.bg-blue-600:hover {
-    background-color: #2b6cb0;
-    transform: translateY(-3px);
-}
-
-button:active:not(:disabled), a.bg-blue-600:active {
-    animation: pulse 0.2s;
-}
-
-button:disabled {
-    background-color: #a0aec0;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Show Cards and Dashboard Components */
-.card {
-    background: #ffffff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: fadeIn 0.5s ease-in;
-}
-
-.card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.card p {
-    color: #4a5568;
-    margin-bottom: 0.5rem;
-}
-
-.card a {
-    margin-top: 0.5rem;
-    transition: color 0.3s ease, transform 0.3s ease;
-}
-
-.card a:hover {
+.password-toggle:hover {
     color: #3182ce;
-    transform: translateY(-2px);
 }
 
-/* Apply hover effects to dashboard-specific elements */
-.dashboard-component {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.dashboard-component:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Ensure buttons within dashboards also have hover effects */
-.card button,
-.card .form-button {
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.card button:hover:not(:disabled),
-.card .form-button:hover:not(:disabled) {
-    background-color: #2b6cb0;
-    transform: translateY(-2px);
-}
-
-.card button:active:not(:disabled),
-.card .form-button:active:not(:disabled) {
-    animation: pulse 0.2s;
-}
-
-/* Filter Dropdown */
-select#genre {
-    max-width: 200px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    animation: slideInLeft 0.5s ease-out;
-    transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-select#genre:hover {
-    transform: translateY(-2px);
-    border-color: #3182ce;
-}
-
-/* Success and Error Messages (Default for Other Pages) */
-.text-green-500 {
-    background: #f0fff4;
-    padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    border-left: 4px solid #38a169;
-    animation: bounceIn 0.5s ease-out;
-    transition: transform 0.3s ease;
-}
-
-.text-green-500:hover {
-    transform: translateY(-2px);
-}
-
+/* ─── Errors, Messages ───────────────────────────── */
 .text-red-500 {
     background: #fff5f5;
     padding: 0.75rem;
     border-radius: 4px;
     margin-bottom: 1rem;
     border-left: 4px solid #e53e3e;
-    animation: bounceIn 0.5s ease-out;
-    transition: transform 0.3s ease;
+    animation: fadeIn 0.5s ease-out;
+}
+.text-green-500 {
+    background: #f0fff4;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #38a169;
+    animation: fadeIn 0.5s ease-out;
 }
 
-.text-red-500:hover {
-    transform: translateY(-2px);
+/* ─── Buttons ────────────────────────────────────── */
+.register-btn,
+button,
+a.bg-blue-600 {
+    background-color: #3182ce;
+    color: #fff;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-weight: 500;
+    text-align: center;
+    width: 100%;
+}
+button:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+}
+button:active:not(:disabled),
+a.bg-blue-600:active {
+    background-color: #2b6cb0;
+}
+.register-btn:active:not(:disabled) {
+    background-color: #2d3748;
 }
 
-/* Footer */
+/* ─── Navigation Styling ─────────────────────────── */
+nav {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+nav a {
+    position: relative;
+    transition: color 0.3s ease;
+}
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #e2e8f0;
+    transition: width 0.3s ease;
+}
+nav a:active::after {
+    width: 100%;
+}
+
+/* ─── Dashboard and Cards ────────────────────────── */
+.card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in;
+}
+.card p {
+    color: #4a5568;
+}
+.card button,
+.card .form-button {
+    transition: background-color 0.3s ease;
+}
+.card button:active:not(:disabled),
+.card .form-button:active:not(:disabled) {
+    background-color: #2b6cb0;
+}
+
+/* ─── Radio Buttons ──────────────────────────────── */
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.5s ease-in;
+}
+.radio-group label {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+}
+.radio-group input[type="radio"] {
+    margin-right: 0.5rem;
+    accent-color: #3182ce;
+}
+
+/* ─── Footer ─────────────────────────────────────── */
 footer {
-    flex-shrink: 0; /* Prevent footer from shrinking */
+    flex-shrink: 0;
     width: 100%;
     background-color: #f8f8f8;
     padding: 10px 0;
@@ -556,64 +295,35 @@ footer {
     animation: fadeIn 0.5s ease-in;
 }
 
-/* Responsive Design */
+/* ─── Responsive Design ──────────────────────────── */
 @media (max-width: 768px) {
-    h1 {
-        font-size: 1.75rem;
-    }
-
-    h2 {
-        font-size: 1.25rem;
-    }
-
-    body.register-page,
-    body.login-page {
-        padding: 1rem;
-    }
-
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
     .register-form-container,
     .login-form-container {
-        padding: 1rem; /* Further reduced for small screens */
-        max-width: 90%; /* Allow form to take more space */
+        padding: 0.75rem;
+        width: 95%;
     }
-
     .tab {
-        font-size: 12px; /* Even smaller for very small screens */
-        padding: 0.5rem;
+        padding: 0.4rem;
+        font-size: 12px;
     }
-
     .welcome-section {
         padding: 1rem;
     }
-
-    .grid-cols-1 {
-        grid-template-columns: 1fr;
-    }
-
     nav .container {
         flex-direction: column;
         align-items: flex-start;
     }
-
     nav .container div {
         margin-top: 1rem;
     }
-
     nav a {
         margin: 0 1rem 0 0;
     }
-
     .radio-group {
         flex-direction: column;
         gap: 0.5rem;
-    }
-
-    .dashboard-component:hover {
-        transform: translateY(-3px) scale(1.01); /* Reduced effect for smaller screens */
-    }
-
-    .card:hover {
-        transform: translateY(-3px) scale(1.01);
     }
 }
 
@@ -621,30 +331,17 @@ footer {
     .card {
         padding: 1rem;
     }
-
     button, a.bg-blue-600 {
-        padding: 0.5rem 1rem;
-        width: 100%;
-        text-align: center;
-        font-size: 14px; /* Smaller button text */
-    }
-
-    .register-form-container input[type="text"],
-    .register-form-container input[type="email"],
-    .register-form-container input[type="tel"],
-    .register-form-container input[type="password"],
-    .login-form-container input[type="email"],
-    .login-form-container input[type="tel"],
-    .login-form-container input[type="password"] {
-        font-size: 14px; /* Smaller input text */
         padding: 0.5rem;
+        font-size: 14px;
     }
-
-    .dashboard-component:hover {
-        transform: translateY(-2px) scale(1.005); /* Minimal effect for very small screens */
-    }
-
-    .card:hover {
-        transform: translateY(-2px) scale(1.005);
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    select {
+        font-size: 14px;
+        padding: 0.5rem;
     }
 }
