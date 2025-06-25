@@ -131,7 +131,7 @@ include 'includes/header.php';
                     type="text"
                     id="email_or_phone"
                     name="email_or_phone"
-                    placeholder="user@example.com or +1234567890"
+                    placeholder="bakhresa@gmail.com or +254713567890"
                     value="<?php echo htmlspecialchars($email_or_phone); ?>"
                     required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

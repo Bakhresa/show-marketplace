@@ -8,6 +8,7 @@
     <link href="styles/styles.css" rel="stylesheet">
     <!-- Include Chart.js for admin dashboard charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="js/script.js"></script>
     <style>
         /* Smooth scrolling for the entire page */
         html {

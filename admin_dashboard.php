@@ -449,7 +449,7 @@ body.modal-open {
                 <label for="image_url" class="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
                 <input type="url" id="image_url" name="image_url" value="<?php echo htmlspecialchars($_POST['image_url'] ?? ''); ?>" 
                        class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                       placeholder="https://example.com/image.jpg">
+                       placeholder="https://bakhresa.com/image.jpg">
             </div>
             <button type="submit" class="form-button w-full bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition">
                 Add Show

@@ -37,7 +37,7 @@ $consumer_key = 'your_consumer_key'; // Replace with your Consumer Key
 $consumer_secret = 'your_consumer_secret'; // Replace with your Consumer Secret
 $passkey = 'your_passkey'; // Replace with your PassKey
 $business_short_code = '174379'; // Safaricom's sandbox shortcode
-$callback_url = 'https://your-ngrok-url/market/callback.php'; // Replace with your Ngrok URL
+$callback_url = 'https://market/callback.php'; // Replace with your Ngrok URL
 
 // Function to get M-Pesa access token
 function getAccessToken($consumer_key, $consumer_secret) {
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pay_booking'])) {
     $phone_number = trim($_POST['phone_number']);
 
     if (!preg_match('/^2547\d{8}$/', $phone_number)) {
-        $error = "Invalid phone number. Use format 2547XXXXXXXX.";
+        $error = "Invalid phone number. Use format 254768908765.";
     } else {
         try {
             $stmt = $pdo->prepare("SELECT id, total_price, status FROM bookings WHERE id = ? AND user_id = ?");
