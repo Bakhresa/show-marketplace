@@ -175,16 +175,17 @@ select:focus {
     transform: translateY(-50%);
     cursor: pointer;
     color: #4a5568;
-    font-size: 18px; /* Slightly larger for better tap target */
-    padding: 0.25rem; /* Add padding for tap area */
+    font-size: 18px;
+    padding: 0.25rem;
     touch-action: manipulation; /* Enable touch */
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
-    transition: color 0.3s ease, transform 0.2s ease; /* Smooth transition */
+    z-index: 10; /* Ensure it’s above other elements */
+    transition: color 0.3s ease, transform 0.2s ease;
 }
 .password-toggle:hover,
 .password-toggle:active {
     color: #3182ce;
-    transform: translateY(-50%) scale(1.1); /* Slight scale on interaction */
+    transform: translateY(-50%) scale(1.1);
 }
 
 /* ─── Errors, Messages ───────────────────────────── */
@@ -367,8 +368,8 @@ footer {
     }
 
     .password-toggle {
-        right: 0.5rem; /* Adjust for smaller screens */
-        font-size: 16px; /* Slightly smaller on small screens */
-        padding: 0.2rem; /* Reduced padding */
+        right: 0.5rem;
+        font-size: 16px;
+        padding: 0.2rem;
     }
 }

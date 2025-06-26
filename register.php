@@ -130,7 +130,7 @@ include 'includes/header.php';
                 <input type="password" id="password" name="password" required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <span class="password-toggle absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
-                      onclick="togglePassword('password')">&#128065;</span>
+                      onclick="togglePassword('password')">👁️</span>
             </div>
 
             <div class="relative">
@@ -138,7 +138,7 @@ include 'includes/header.php';
                 <input type="password" id="confirm_password" name="confirm_password" required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <span class="password-toggle absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
-                      onclick="togglePassword('confirm_password')">&#128065;</span>
+                      onclick="togglePassword('confirm_password')">👁️</span>
             </div>
 
             <div>
@@ -174,24 +174,32 @@ include 'includes/header.php';
 </div>
 </div>
 <script>
-  document.querySelectorAll('input, select').forEach(el => {
-    el.addEventListener('focus', () => {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
+    document.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('focus', () => {
+            setTimeout(() => {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
     });
-  });
 
-  function togglePassword(fieldId) {
-    const passwordField = document.getElementById(fieldId);
-    const toggleIcon = passwordField.nextElementSibling;
-    if (passwordField.type === 'password') {
-      passwordField.type = 'text';
-      toggleIcon.textContent = '👁️'; // Open eye when visible
-    } else {
-      passwordField.type = 'password';
-      toggleIcon.textContent = '👁️‍🗨️'; // Closed eye when hidden
+    function togglePassword(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        if (!passwordField) {
+            console.error('Password field not found:', fieldId);
+            return;
+        }
+        const toggleIcon = passwordField.nextElementSibling;
+        if (!toggleIcon || !toggleIcon.classList.contains('password-toggle')) {
+            console.error('Toggle icon not found for:', fieldId);
+            return;
+        }
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.textContent = '👁️'; // Open eye
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.textContent = '👁️‍🗨️'; // Closed eye
+        }
     }
-  }
 </script>
 <?php include 'includes/footer.php'; ?>
