@@ -155,6 +155,7 @@ select {
     width: 100%;
     font-size: 16px;
     margin-bottom: 0.75rem;
+    position: relative; /* Ensure proper stacking context */
 }
 input:focus,
 select:focus {
@@ -174,10 +175,16 @@ select:focus {
     transform: translateY(-50%);
     cursor: pointer;
     color: #4a5568;
-    font-size: 16px;
+    font-size: 18px; /* Slightly larger for better tap target */
+    padding: 0.25rem; /* Add padding for tap area */
+    touch-action: manipulation; /* Enable touch */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+    transition: color 0.3s ease, transform 0.2s ease; /* Smooth transition */
 }
-.password-toggle:hover {
+.password-toggle:hover,
+.password-toggle:active {
     color: #3182ce;
+    transform: translateY(-50%) scale(1.1); /* Slight scale on interaction */
 }
 
 /* ─── Errors, Messages ───────────────────────────── */
@@ -357,5 +364,11 @@ footer {
         margin: auto;
         padding: 1rem;
         box-sizing: border-box;
+    }
+
+    .password-toggle {
+        right: 0.5rem; /* Adjust for smaller screens */
+        font-size: 16px; /* Slightly smaller on small screens */
+        padding: 0.2rem; /* Reduced padding */
     }
 }
