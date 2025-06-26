@@ -15,12 +15,14 @@ $success = '';
 $email_or_phone = '';
 $full_name = '';
 $password = '';
+$confirm_password = ''; // New field variable
 $country = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email_or_phone = trim($_POST['email_or_phone'] ?? '');
     $full_name      = trim($_POST['full_name'] ?? '');
     $password       = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? ''; // New field value
     $country        = trim($_POST['country'] ?? '');
 
     $email = null;
@@ -43,6 +45,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Password is required.';
     } elseif (strlen($password) < 6) {
         $errors[] = 'Password must be at least 6 characters.';
+    }
+    if ($confirm_password === '') {
+        $errors[] = 'Please confirm your password.';
+    } elseif ($password !== $confirm_password) {
+        $errors[] = 'Passwords do not match.';
     }
     if ($country === '') {
         $errors[] = 'Country is required.';
@@ -70,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             $stmt->execute([$full_name, $email, $phone_number, $hashed_password, $country]);
             $success = '✅ Registration successful! <a href="login.php" class="text-blue-600 underline">Login</a>.';
-            $email_or_phone = $full_name = $password = $country = '';
+            $email_or_phone = $full_name = $password = $confirm_password = $country = '';
         } catch (PDOException $e) {
             $errors[] = 'Registration failed: ' . $e->getMessage();
         }
@@ -118,10 +125,20 @@ include 'includes/header.php';
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <div>
+            <div class="relative">
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input type="password" id="password" name="password" required
                     class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="password-toggle absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                      onclick="togglePassword('password')">&#128065;</span>
+            </div>
+
+            <div class="relative">
+                <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required
+                    class="form-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="password-toggle absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                      onclick="togglePassword('confirm_password')">&#128065;</span>
             </div>
 
             <div>
@@ -164,5 +181,17 @@ include 'includes/header.php';
       }, 300);
     });
   });
+
+  function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const toggleIcon = passwordField.nextElementSibling;
+    if (passwordField.type === 'password') {
+      passwordField.type = 'text';
+      toggleIcon.textContent = '👁️'; // Open eye when visible
+    } else {
+      passwordField.type = 'password';
+      toggleIcon.textContent = '👁️‍🗨️'; // Closed eye when hidden
+    }
+  }
 </script>
 <?php include 'includes/footer.php'; ?>
