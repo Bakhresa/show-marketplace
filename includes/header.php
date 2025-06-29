@@ -91,6 +91,11 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        /* Mobile-specific navigation improvements */
+        .mobile-nav {
+            display: none;
+        }
+
         /* Global scrollbar styling */
         body {
             scrollbar-width: thin;
@@ -111,94 +116,24 @@
             border-radius: 4px;
         }
 
-        /* Mobile hamburger menu */
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            cursor: pointer;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            position: relative;
-            z-index: 1001;
-        }
-
-        .hamburger span {
-            width: 25px;
-            height: 3px;
-            background-color: white;
-            margin: 2px 0;
-            transition: 0.3s;
-            border-radius: 2px;
-        }
-
-        .hamburger.active span:nth-child(1) {
-            transform: rotate(-45deg) translate(-5px, 6px);
-        }
-
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active span:nth-child(3) {
-            transform: rotate(45deg) translate(-5px, -6px);
-        }
-
-        /* Mobile navigation styling */
-        .mobile-nav {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(30, 58, 138, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .mobile-nav a {
-            display: block;
-            padding: 16px 20px;
-            color: white;
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 500;
-            min-height: 44px;
-            line-height: 20px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .mobile-nav a:last-child {
-            border-bottom: none;
-        }
-
-        .mobile-nav a:hover,
-        .mobile-nav a:active {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding-left: 24px;
-        }
-
-        /* Desktop navigation */
-        .desktop-nav a {
-            transition: all 0.3s ease;
-            padding: 8px 12px;
-            border-radius: 4px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .desktop-nav a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Responsive styles */
+        /* Mobile responsive header */
         @media (max-width: 768px) {
-            .hamburger {
-                display: flex;
+            .header-nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .header-nav a {
+                display: block;
+                text-align: center;
+                padding: 8px 12px;
+                border-radius: 4px;
+                background-color: rgba(255, 255, 255, 0.1);
+                margin: 2px 0;
+            }
+
+            .mobile-nav {
+                display: block;
             }
 
             .desktop-nav {
@@ -225,11 +160,6 @@
                 height: 200px;
                 bottom: 5%;
                 right: 5%;
-            }
-
-            /* Make header relative for mobile nav positioning */
-            header {
-                position: relative;
             }
         }
 
@@ -267,72 +197,47 @@
             }
         }
 
-        /* Auth page specific styling */
-        .auth-link {
-            display: inline-block;
-            padding: 12px 20px;
-            margin: 8px 4px;
-            background-color: rgba(59, 130, 246, 0.1);
-            border: 2px solid rgba(59, 130, 246, 0.3);
-            border-radius: 8px;
-            text-decoration: none;
-            color: #3b82f6;
-            text-align: center;
-            min-height: 44px;
-            line-height: 20px;
-            transition: all 0.3s ease;
-            -webkit-tap-highlight-color: transparent;
-            font-size: 16px;
-            font-weight: 500;
+        /* Mobile hamburger menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
             cursor: pointer;
+            padding: 4px;
         }
 
-        .auth-link:hover,
-        .auth-link:active {
-            background-color: rgba(59, 130, 246, 0.2);
-            border-color: rgba(59, 130, 246, 0.5);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 3px 0;
+            transition: 0.3s;
         }
 
         @media (max-width: 768px) {
-            .auth-link {
-                display: block;
-                width: 100%;
-                margin: 8px 0;
-                text-align: center;
+            .hamburger {
+                display: flex;
             }
         }
     </style>
 </head>
 <body class="<?php echo htmlspecialchars($body_class ?? ''); ?>">
+<?php if (basename($_SERVER['PHP_SELF']) !== 'register.php' && basename($_SERVER['PHP_SELF']) !== 'login.php'): ?>
     <header class="bg-blue-900 text-white p-4">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl md:text-2xl font-bold">SHOW MARKETPLACE</h1>
             
             <!-- Desktop Navigation -->
-            <nav class="desktop-nav hidden md:flex space-x-4">
-                <?php if (basename($_SERVER['PHP_SELF']) === 'register.php' || basename($_SERVER['PHP_SELF']) === 'login.php'): ?>
-                    <!-- Auth page navigation -->
-                    <a href="index.php" class="text-white hover:underline">Home</a>
-                    <?php if (basename($_SERVER['PHP_SELF']) === 'login.php'): ?>
-                        <a href="register.php" class="text-white hover:underline">Register</a>
-                    <?php else: ?>
-                        <a href="login.php" class="text-white hover:underline">Login</a>
-                    <?php endif; ?>
+            <nav class="desktop-nav hidden md:block">
+                <a href="index.php" class="text-white hover:underline">Home</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>" 
+                       class="text-white hover:underline ml-4">
+                        Dashboard
+                    </a>
+                    <a href="logout.php" class="text-white hover:underline ml-4">Logout</a>
                 <?php else: ?>
-                    <!-- Normal page navigation -->
-                    <a href="index.php" class="text-white hover:underline">Home</a>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>" 
-                           class="text-white hover:underline">
-                            Dashboard
-                        </a>
-                        <a href="logout.php" class="text-white hover:underline">Logout</a>
-                    <?php else: ?>
-                        <a href="login.php" class="text-white hover:underline">Login</a>
-                        <a href="register.php" class="text-white hover:underline">Register</a>
-                    <?php endif; ?>
+                    <a href="login.php" class="text-white hover:underline ml-4">Login</a>
+                    <a href="register.php" class="text-white hover:underline ml-4">Register</a>
                 <?php endif; ?>
             </nav>
 
@@ -345,50 +250,35 @@
         </div>
 
         <!-- Mobile Navigation -->
-        <nav id="mobileNav" class="mobile-nav md:hidden" style="display: none;">
-            <?php if (basename($_SERVER['PHP_SELF']) === 'register.php' || basename($_SERVER['PHP_SELF']) === 'login.php'): ?>
-                <!-- Auth page mobile navigation -->
-                <a href="index.php">Home</a>
-                <?php if (basename($_SERVER['PHP_SELF']) === 'login.php'): ?>
-                    <a href="register.php">Register</a>
-                <?php else: ?>
-                    <a href="login.php">Login</a>
-                <?php endif; ?>
-            <?php else: ?>
-                <!-- Normal page mobile navigation -->
-                <a href="index.php">Home</a>
+        <nav id="mobileNav" class="mobile-nav md:hidden mt-4" style="display: none;">
+            <div class="header-nav flex flex-col">
+                <a href="index.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Home</a>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>">
+                    <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>" 
+                       class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">
                         Dashboard
                     </a>
-                    <a href="logout.php">Logout</a>
+                    <a href="logout.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Logout</a>
                 <?php else: ?>
-                    <a href="login.php">Login</a>
-                    <a href="register.php">Register</a>
+                    <a href="login.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Login</a>
+                    <a href="register.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Register</a>
                 <?php endif; ?>
-            <?php endif; ?>
+            </div>
         </nav>
     </header>
-
-    <?php if (basename($_SERVER['PHP_SELF']) !== 'register.php' && basename($_SERVER['PHP_SELF']) !== 'login.php'): ?>
     <main class="container mx-auto p-4">
-    <?php endif; ?>
 
 <script>
 function toggleMobileMenu() {
     const mobileNav = document.getElementById('mobileNav');
     const hamburger = document.querySelector('.hamburger');
     
-    if (mobileNav && hamburger) {
-        const isVisible = mobileNav.style.display === 'block';
-        
-        if (isVisible) {
-            mobileNav.style.display = 'none';
-            hamburger.classList.remove('active');
-        } else {
-            mobileNav.style.display = 'block';
-            hamburger.classList.add('active');
-        }
+    if (mobileNav.style.display === 'none' || mobileNav.style.display === '') {
+        mobileNav.style.display = 'block';
+        hamburger.classList.add('active');
+    } else {
+        mobileNav.style.display = 'none';
+        hamburger.classList.remove('active');
     }
 }
 
@@ -397,61 +287,11 @@ document.addEventListener('click', function(event) {
     const mobileNav = document.getElementById('mobileNav');
     const hamburger = document.querySelector('.hamburger');
     
-    if (mobileNav && hamburger && 
-        !hamburger.contains(event.target) && 
-        !mobileNav.contains(event.target)) {
+    if (!hamburger.contains(event.target) && !mobileNav.contains(event.target)) {
         mobileNav.style.display = 'none';
         hamburger.classList.remove('active');
     }
 });
-
-// Enhanced touch handling for mobile links
-document.addEventListener('DOMContentLoaded', function() {
-    // Ensure all links work properly on mobile
-    const allLinks = document.querySelectorAll('a');
-    allLinks.forEach(link => {
-        // Add touch events for better mobile interaction
-        link.addEventListener('touchstart', function(e) {
-            // Prevent default to avoid double-tap issues
-            this.style.opacity = '0.7';
-        });
-        
-        link.addEventListener('touchend', function(e) {
-            this.style.opacity = '1';
-            // Small delay to ensure link activation
-            setTimeout(() => {
-                if (this.href && this.href !== '#') {
-                    window.location.href = this.href;
-                }
-            }, 100);
-        });
-
-        link.addEventListener('touchcancel', function(e) {
-            this.style.opacity = '1';
-        });
-    });
-
-    // Special handling for auth links in forms
-    const authLinks = document.querySelectorAll('.auth-link');
-    authLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Add visual feedback
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-                if (this.href) {
-                    window.location.href = this.href;
-                }
-            }, 150);
-        });
-    });
-});
 </script>
 
-<?php if (basename($_SERVER['PHP_SELF']) !== 'register.php' && basename($_SERVER['PHP_SELF']) !== 'login.php'): ?>
-</body>
-</html>
 <?php endif; ?>
