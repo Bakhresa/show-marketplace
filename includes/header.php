@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title><?php echo htmlspecialchars($page_title ?? 'Show Marketplace'); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="styles/styles.css" rel="stylesheet">
@@ -51,18 +51,34 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50 50L150 50L100 150Z' fill='none' stroke='%23FFFFFF' stroke-width='20'/%3E%3C/svg%3E");
         }
 
-        /* Ensure form elements have smooth transitions */
+        /* Mobile-optimized form elements */
         .form-input {
             transition: all 0.3s ease;
+            min-height: 44px; /* Apple's recommended minimum touch target */
+            font-size: 16px; /* Prevents zoom on iOS */
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background-color: white;
+            -webkit-appearance: none; /* Remove default styling on iOS */
+            appearance: none;
         }
 
         .form-input:focus {
             transform: scale(1.02);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            outline: none;
         }
 
         .form-button {
             transition: all 0.3s ease;
+            min-height: 44px; /* Apple's recommended minimum touch target */
+            font-size: 16px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
         }
 
         .form-button:hover {
@@ -70,10 +86,21 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        .form-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mobile-specific navigation improvements */
+        .mobile-nav {
+            display: none;
+        }
+
         /* Global scrollbar styling */
         body {
             scrollbar-width: thin;
             scrollbar-color: #c084fc #ff5e62;
+            -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
         }
 
         body::-webkit-scrollbar {
@@ -87,6 +114,53 @@
         body::-webkit-scrollbar-thumb {
             background: #c084fc;
             border-radius: 4px;
+        }
+
+        /* Mobile responsive header */
+        @media (max-width: 768px) {
+            .header-nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .header-nav a {
+                display: block;
+                text-align: center;
+                padding: 8px 12px;
+                border-radius: 4px;
+                background-color: rgba(255, 255, 255, 0.1);
+                margin: 2px 0;
+            }
+
+            .mobile-nav {
+                display: block;
+            }
+
+            .desktop-nav {
+                display: none;
+            }
+
+            /* Better mobile form container */
+            .form-container {
+                padding: 16px;
+                margin: 16px;
+                border-radius: 12px;
+            }
+
+            /* Adjust background shapes for mobile */
+            .graphic-bg::before {
+                width: 150px;
+                height: 150px;
+                top: 5%;
+                left: 5%;
+            }
+
+            .graphic-bg::after {
+                width: 200px;
+                height: 200px;
+                bottom: 5%;
+                right: 5%;
+            }
         }
 
         /* Ensure the form container is scrollable on small screens */
@@ -111,14 +185,49 @@
                 border-radius: 4px;
             }
         }
+
+        /* Prevent zoom on input focus for iOS */
+        @media screen and (max-width: 768px) {
+            select, textarea, input[type="text"], input[type="password"], 
+            input[type="datetime"], input[type="datetime-local"], 
+            input[type="date"], input[type="month"], input[type="time"], 
+            input[type="week"], input[type="number"], input[type="email"], 
+            input[type="url"], input[type="search"], input[type="tel"] {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Mobile hamburger menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body class="<?php echo htmlspecialchars($body_class ?? ''); ?>">
 <?php if (basename($_SERVER['PHP_SELF']) !== 'register.php' && basename($_SERVER['PHP_SELF']) !== 'login.php'): ?>
     <header class="bg-blue-900 text-white p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold">SHOW MARKETPLACE</h1>
-            <nav>
+            <h1 class="text-xl md:text-2xl font-bold">SHOW MARKETPLACE</h1>
+            
+            <!-- Desktop Navigation -->
+            <nav class="desktop-nav hidden md:block">
                 <a href="index.php" class="text-white hover:underline">Home</a>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>" 
@@ -131,7 +240,58 @@
                     <a href="register.php" class="text-white hover:underline ml-4">Register</a>
                 <?php endif; ?>
             </nav>
+
+            <!-- Mobile Hamburger Menu -->
+            <div class="hamburger md:hidden" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
+
+        <!-- Mobile Navigation -->
+        <nav id="mobileNav" class="mobile-nav md:hidden mt-4" style="display: none;">
+            <div class="header-nav flex flex-col">
+                <a href="index.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Home</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="<?php echo $_SESSION['is_admin'] ? 'admin_dashboard.php' : 'user_dashboard.php'; ?>" 
+                       class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="logout.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Logout</a>
+                <?php else: ?>
+                    <a href="login.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Login</a>
+                    <a href="register.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Register</a>
+                <?php endif; ?>
+            </div>
+        </nav>
     </header>
     <main class="container mx-auto p-4">
+
+<script>
+function toggleMobileMenu() {
+    const mobileNav = document.getElementById('mobileNav');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (mobileNav.style.display === 'none' || mobileNav.style.display === '') {
+        mobileNav.style.display = 'block';
+        hamburger.classList.add('active');
+    } else {
+        mobileNav.style.display = 'none';
+        hamburger.classList.remove('active');
+    }
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(event) {
+    const mobileNav = document.getElementById('mobileNav');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (!hamburger.contains(event.target) && !mobileNav.contains(event.target)) {
+        mobileNav.style.display = 'none';
+        hamburger.classList.remove('active');
+    }
+});
+</script>
+
 <?php endif; ?>
