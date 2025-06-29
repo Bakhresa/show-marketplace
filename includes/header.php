@@ -218,6 +218,59 @@
                 display: flex;
             }
         }
+
+        /* Mobile-friendly links for login/register pages */
+        .mobile-link {
+            display: inline-block;
+            padding: 12px 16px;
+            margin: 8px 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            text-align: center;
+            min-height: 44px;
+            line-height: 20px;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-link:hover, .mobile-link:active {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Ensure proper z-index for mobile navigation */
+        #mobileNav {
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* Fix for login/register page links on mobile */
+        @media (max-width: 768px) {
+            .auth-links a {
+                display: block;
+                padding: 12px 16px;
+                margin: 8px 0;
+                background-color: rgba(59, 130, 246, 0.1);
+                border: 2px solid rgba(59, 130, 246, 0.3);
+                border-radius: 8px;
+                text-decoration: none;
+                text-align: center;
+                min-height: 44px;
+                line-height: 20px;
+                transition: all 0.3s ease;
+                -webkit-tap-highlight-color: transparent;
+                font-size: 16px;
+                font-weight: 500;
+            }
+
+            .auth-links a:hover, .auth-links a:active {
+                background-color: rgba(59, 130, 246, 0.2);
+                border-color: rgba(59, 130, 246, 0.5);
+                transform: translateY(-1px);
+            }
+        }
     </style>
 </head>
 <body class="<?php echo htmlspecialchars($body_class ?? ''); ?>">
@@ -241,15 +294,18 @@
                 <?php endif; ?>
             </nav>
 
-            <!-- Mobile Hamburger Menu -->
+            <!-- Mobile Hamburger Menu (only show if not on login/register pages) -->
+            <?php if (basename($_SERVER['PHP_SELF']) !== 'register.php' && basename($_SERVER['PHP_SELF']) !== 'login.php'): ?>
             <div class="hamburger md:hidden" onclick="toggleMobileMenu()">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
+            <?php endif; ?>
         </div>
 
-        <!-- Mobile Navigation -->
+        <!-- Mobile Navigation (only show if not on login/register pages) -->
+        <?php if (basename($_SERVER['PHP_SELF']) !== 'register.php' && basename($_SERVER['PHP_SELF']) !== 'login.php'): ?>
         <nav id="mobileNav" class="mobile-nav md:hidden mt-4" style="display: none;">
             <div class="header-nav flex flex-col">
                 <a href="index.php" class="text-white hover:bg-white hover:bg-opacity-20 transition-colors">Home</a>
@@ -265,6 +321,7 @@
                 <?php endif; ?>
             </div>
         </nav>
+        <?php endif; ?>
     </header>
     <main class="container mx-auto p-4">
 
@@ -273,12 +330,14 @@ function toggleMobileMenu() {
     const mobileNav = document.getElementById('mobileNav');
     const hamburger = document.querySelector('.hamburger');
     
-    if (mobileNav.style.display === 'none' || mobileNav.style.display === '') {
-        mobileNav.style.display = 'block';
-        hamburger.classList.add('active');
-    } else {
-        mobileNav.style.display = 'none';
-        hamburger.classList.remove('active');
+    if (mobileNav && hamburger) {
+        if (mobileNav.style.display === 'none' || mobileNav.style.display === '') {
+            mobileNav.style.display = 'block';
+            hamburger.classList.add('active');
+        } else {
+            mobileNav.style.display = 'none';
+            hamburger.classList.remove('active');
+        }
     }
 }
 
@@ -287,10 +346,21 @@ document.addEventListener('click', function(event) {
     const mobileNav = document.getElementById('mobileNav');
     const hamburger = document.querySelector('.hamburger');
     
-    if (!hamburger.contains(event.target) && !mobileNav.contains(event.target)) {
+    if (mobileNav && hamburger && !hamburger.contains(event.target) && !mobileNav.contains(event.target)) {
         mobileNav.style.display = 'none';
         hamburger.classList.remove('active');
     }
+});
+
+// Ensure all links are properly clickable on mobile
+document.addEventListener('DOMContentLoaded', function() {
+    // Add touch event handling for better mobile interaction
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('touchstart', function() {
+            // Add a slight delay to ensure touch is registered
+        });
+    });
 });
 </script>
 
